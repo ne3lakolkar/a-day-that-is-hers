@@ -5,48 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Day That Is Hers</title>
     
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --glass-bg: rgba(15, 20, 35, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-bg: rgba(10, 15, 25, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --text-primary: rgba(255, 255, 255, 0.95);
         }
 
         body { 
             margin: 0; 
-            background: #0a0b12; /* Deep space background */
-            font-family: 'Caveat', cursive; /* Handwritten font applied */
+            background: #050508; 
+            font-family: 'Caveat', cursive; 
             overflow: hidden; 
             color: var(--text-primary);
             user-select: none;
-            cursor: pointer;
         }
 
-        canvas {
+        #video-container { 
+            position: relative; 
+            width: 100vw; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        /* Camera feed: mirrored and dimmed heavily to keep focus on particles */
+        video { display: none; }
+        #camera_canvas {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            opacity: 0.15; /* Subtle background presence */
             z-index: 1;
+        }
+
+        #particle_canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 2;
+            pointer-events: none;
         }
 
         #ui-layer {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             z-index: 10;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            pointer-events: none; /* Let clicks pass through to the document listener */
+        }
+
+        .instruction { 
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 1.1rem; 
+            letter-spacing: 2px; 
+            text-transform: uppercase; 
+            background: rgba(0,0,0,0.6);
+            padding: 15px 30px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            transition: opacity 1s ease;
         }
 
         #poem-card { 
@@ -55,26 +86,27 @@
             border-radius: 20px; 
             border: 1px solid var(--glass-border); 
             backdrop-filter: blur(12px); 
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); 
             max-width: 90vw;
-            width: 500px;
+            width: 550px;
             text-align: center;
             transition: opacity 0.8s ease, transform 0.8s ease;
+            opacity: 0; /* Hidden initially */
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+
+        #poem-card.visible {
             opacity: 1;
             transform: translateY(0);
         }
 
-        #poem-card.hidden {
-            opacity: 0;
-            transform: translateY(15px);
-        }
-
         .stanza {
-            font-size: 1.8rem; /* Adjusted for the handwritten font */
-            line-height: 1.5;
+            font-size: 2rem; 
+            line-height: 1.4;
             letter-spacing: 1px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            white-space: pre-line; /* Respects line breaks in the JS array */
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            white-space: pre-line; 
         }
 
         .hint {
@@ -82,31 +114,44 @@
             bottom: 40px;
             font-family: 'Segoe UI', sans-serif;
             font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.6);
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            animation: pulse 2s infinite;
+            opacity: 0;
+            transition: opacity 1s ease;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.8; }
+        #loading {
+            position: absolute;
+            z-index: 20;
+            font-family: 'Segoe UI', sans-serif;
+            letter-spacing: 2px;
+            font-size: 1rem;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="particleCanvas"></canvas>
+<div id="video-container">
+    <video id="input_video" autoplay playsinline></video>
+    <canvas id="camera_canvas"></canvas>
+    <canvas id="particle_canvas"></canvas>
+    
+    <div id="loading">WAKING UP THE CAMERA...</div>
 
     <div id="ui-layer">
+        <div id="hug-prompt" class="instruction" style="display:none;">Bring both hands together to begin...</div>
+        
         <div id="poem-card">
             <div id="poem-text" class="stanza"></div>
         </div>
-        <div class="hint">Tap or Swipe to continue 🤍</div>
+
+        <div id="controls-hint" class="hint">Swipe hand left/right to continue • Make a Heart 🫶 for magic</div>
     </div>
+</div>
 
 <script>
-    // --- 1. Poem Data & Colors ---
+    // --- 1. Data State ---
     const stanzas = [
         "Some people arrive into a day\nand nothing really changes shape,\nThe hours pass the way they do,\nthe sky remains the same escape.",
         "But then there are days like this—\nthe kind that feel a little more aware,\nAs if the world remembers softly\nthat someone like her is here.",
@@ -128,222 +173,262 @@
         "Because some people don’t just pass through life—\nthey change how it’s seen, how it’s felt, how it stays…\n\n…and today just happens to be hers. 💜"
     ];
 
-    // Colors matching the "finding new colors" theme (R, G, B)
-    // Progresses from cool night blues/purples into warm sunset pinks/golds
     const colorPalettes = [
-        {r: 100, g: 150, b: 255}, // Blue
-        {r: 120, g: 180, b: 255}, // Light Blue
-        {r: 140, g: 160, b: 255}, // Periwinkle
-        {r: 160, g: 140, b: 255}, // Soft Purple
-        {r: 180, g: 120, b: 240}, // Purple
-        {r: 200, g: 100, b: 220}, // Magenta
-        {r: 220, g: 90,  b: 180}, // Pink
-        {r: 240, g: 100, b: 140}, // Rose
-        {r: 255, g: 120, b: 100}, // Coral
-        {r: 255, g: 150, b: 80},  // Peach
-        {r: 255, g: 180, b: 60},  // Gold
-        {r: 255, g: 200, b: 80},  // Warm Gold
-        {r: 255, g: 220, b: 100}, // Soft Yellow
-        {r: 255, g: 180, b: 150}, // Sunset Blush
-        {r: 220, g: 140, b: 200}, // Twilight Pink
-        {r: 180, g: 120, b: 240}, // Deep Twilight
-        {r: 150, g: 100, b: 255}, // Night Purple
-        {r: 180, g: 130, b: 255}  // Final Bright Purple
+        {r: 100, g: 150, b: 255}, {r: 120, g: 180, b: 255}, {r: 140, g: 160, b: 255},
+        {r: 160, g: 140, b: 255}, {r: 180, g: 120, b: 240}, {r: 200, g: 100, b: 220},
+        {r: 220, g: 90,  b: 180}, {r: 240, g: 100, b: 140}, {r: 255, g: 120, b: 100},
+        {r: 255, g: 150, b: 80},  {r: 255, g: 180, b: 60},  {r: 255, g: 200, b: 80},
+        {r: 255, g: 220, b: 100}, {r: 255, g: 180, b: 150}, {r: 220, g: 140, b: 200},
+        {r: 180, g: 120, b: 240}, {r: 150, g: 100, b: 255}, {r: 180, g: 130, b: 255} 
     ];
 
     let currentIndex = 0;
+    let isRevealed = false;
     let isTransitioning = false;
+    
+    // Gesture Tracking State
+    let lastHandX = null;
+    let lastSwipeTime = 0;
 
-    // --- 2. Canvas & Particle System Setup ---
-    const canvas = document.getElementById('particleCanvas');
+    // --- 2. Setup 3D Particles ---
+    const canvas = document.getElementById('particle_canvas');
     const ctx = canvas.getContext('2d');
     let width, height;
 
     const particles = [];
-    const numParticles = 1500;
+    const extraMagicParticles = []; // For the heart gesture
+    const numParticles = 800; // Optimized for running alongside MediaPipe
     
-    // Global transform state
-    let rotationX = 0;
-    let rotationY = 0;
-    let targetShape = 'sphere'; // 'sphere' or 'heart'
+    let rotationX = 0, rotationY = 0;
+    let targetShape = 'sphere'; 
     let currentGlobalColor = colorPalettes[0];
 
     function resize() {
-        width = window.innerWidth;
-        height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
+        width = window.innerWidth; height = window.innerHeight;
+        canvas.width = width; canvas.height = height;
     }
-    window.addEventListener('resize', resize);
-    resize();
+    window.addEventListener('resize', resize); resize();
 
-    // Generate coordinates for both shapes for every particle
     function initParticles() {
         for (let i = 0; i < numParticles; i++) {
-            // --- Sphere Coordinates (Fibonacci Sphere for even distribution) ---
+            // Sphere (Fibonacci)
             const phi = Math.acos(-1 + (2 * i) / numParticles);
             const theta = Math.sqrt(numParticles * Math.PI) * phi;
-            const r = width < 600 ? 120 : 200; // Smaller on mobile
-            
+            const r = width < 600 ? 120 : 200; 
             const sx = r * Math.cos(theta) * Math.sin(phi);
             const sy = r * Math.sin(theta) * Math.sin(phi);
             const sz = r * Math.cos(phi);
 
-            // --- Heart Coordinates (3D Parametric) ---
+            // Heart (3D Parametric)
             const t = Math.random() * Math.PI * 2;
             const hx2D = 16 * Math.pow(Math.sin(t), 3);
             const hy2D = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-            
-            // Extrude into a 3D volume
             const angle = (Math.random() - 0.5) * Math.PI; 
-            const scale = width < 600 ? 5 : 8; // Smaller on mobile
+            const scale = width < 600 ? 6 : 9; 
             const hx = (hx2D * scale) * Math.cos(angle);
             const hz = (hx2D * scale) * Math.sin(angle);
             const hy = hy2D * scale;
 
             particles.push({
-                x: sx, y: sy, z: sz, // Current positions start at sphere
+                x: sx, y: sy, z: sz, 
                 targetX: sx, targetY: sy, targetZ: sz,
                 sphere: {x: sx, y: sy, z: sz},
                 heart: {x: hx, y: hy, z: hz},
                 color: {r: currentGlobalColor.r, g: currentGlobalColor.g, b: currentGlobalColor.b},
-                size: Math.random() * 1.5 + 0.5,
-                speed: Math.random() * 0.04 + 0.02
+                size: Math.random() * 2 + 0.5,
+                speed: Math.random() * 0.05 + 0.02
             });
         }
     }
 
     // --- 3. Animation Loop ---
     function animate() {
-        ctx.fillStyle = 'rgba(10, 11, 18, 0.2)'; // Creates trailing effect
-        ctx.fillRect(0, 0, width, height);
+        ctx.clearRect(0, 0, width, height);
 
-        // Auto-rotate the system
-        rotationY += 0.003;
-        rotationX += 0.001;
+        // Auto-rotate
+        rotationY += 0.005; rotationX += 0.002;
+        const centerX = width / 2; const centerY = height / 2;
 
-        const centerX = width / 2;
-        const centerY = height / 2;
+        if(isRevealed) {
+            particles.forEach(p => {
+                // Determine target
+                if (targetShape === 'heart') {
+                    p.targetX = p.heart.x; p.targetY = p.heart.y; p.targetZ = p.heart.z;
+                } else {
+                    p.targetX = p.sphere.x; p.targetY = p.sphere.y; p.targetZ = p.sphere.z;
+                }
 
-        particles.forEach(p => {
-            // Update target shape based on global state
-            if (targetShape === 'heart') {
-                p.targetX = p.heart.x; p.targetY = p.heart.y; p.targetZ = p.heart.z;
-            } else {
-                p.targetX = p.sphere.x; p.targetY = p.sphere.y; p.targetZ = p.sphere.z;
-            }
+                // Morph interpolation
+                p.x += (p.targetX - p.x) * p.speed;
+                p.y += (p.targetY - p.y) * p.speed;
+                p.z += (p.targetZ - p.z) * p.speed;
 
-            // Smoothly interpolate position (The Morph)
-            p.x += (p.targetX - p.x) * p.speed;
-            p.y += (p.targetY - p.y) * p.speed;
-            p.z += (p.targetZ - p.z) * p.speed;
+                // Color interpolation
+                p.color.r += (currentGlobalColor.r - p.color.r) * 0.05;
+                p.color.g += (currentGlobalColor.g - p.color.g) * 0.05;
+                p.color.b += (currentGlobalColor.b - p.color.b) * 0.05;
 
-            // Smoothly interpolate color per particle
-            p.color.r += (currentGlobalColor.r - p.color.r) * 0.05;
-            p.color.g += (currentGlobalColor.g - p.color.g) * 0.05;
-            p.color.b += (currentGlobalColor.b - p.color.b) * 0.05;
+                // 3D Math
+                let cosX = Math.cos(rotationX), sinX = Math.sin(rotationX);
+                let cosY = Math.cos(rotationY), sinY = Math.sin(rotationY);
+                let x1 = p.x * cosY - p.z * sinY; let z1 = p.z * cosY + p.x * sinY;
+                let y1 = p.y * cosX - z1 * sinX;  let z2 = z1 * cosX + p.y * sinX;
 
-            // Apply 3D Rotations
-            let cosX = Math.cos(rotationX), sinX = Math.sin(rotationX);
-            let cosY = Math.cos(rotationY), sinY = Math.sin(rotationY);
+                const perspective = 600 / (600 + z2);
+                const drawX = centerX + x1 * perspective;
+                const drawY = centerY + y1 * perspective;
+                const drawSize = Math.max(0.1, p.size * perspective);
 
-            // Rotate Y
-            let x1 = p.x * cosY - p.z * sinY;
-            let z1 = p.z * cosY + p.x * sinY;
-            // Rotate X
-            let y1 = p.y * cosX - z1 * sinX;
-            let z2 = z1 * cosX + p.y * sinX;
+                let finalSize = drawSize;
+                if (targetShape === 'heart') finalSize *= (Math.sin(Date.now() * 0.005) * 0.3 + 1);
 
-            // Project 3D to 2D
-            const perspective = 600 / (600 + z2);
-            const drawX = centerX + x1 * perspective;
-            const drawY = centerY + y1 * perspective;
-            const drawSize = Math.max(0.1, p.size * perspective);
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, finalSize, 0, Math.PI * 2);
+                ctx.fillStyle = `rgb(${Math.floor(p.color.r)}, ${Math.floor(p.color.g)}, ${Math.floor(p.color.b)})`;
+                ctx.fill();
+            });
+        }
 
-            // Add slight heartbeat pulse if in heart mode
-            let currentSize = drawSize;
-            if (targetShape === 'heart') {
-                const pulse = Math.sin(Date.now() * 0.005) * 0.5 + 1;
-                currentSize *= pulse;
-            }
-
-            // Draw Particle
+        // Handle Extra Magic Particles (from Heart gesture)
+        for (let i = extraMagicParticles.length - 1; i >= 0; i--) {
+            let mp = extraMagicParticles[i];
+            mp.x += mp.vx; mp.y += mp.vy;
+            mp.opacity -= 0.02;
+            
             ctx.beginPath();
-            ctx.arc(drawX, drawY, currentSize, 0, Math.PI * 2);
-            ctx.fillStyle = `rgb(${Math.floor(p.color.r)}, ${Math.floor(p.color.g)}, ${Math.floor(p.color.b)})`;
+            ctx.arc(mp.x, mp.y, mp.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 200, 255, ${mp.opacity})`;
+            ctx.shadowBlur = 10; ctx.shadowColor = 'white';
             ctx.fill();
-        });
+            ctx.shadowBlur = 0; // reset
+
+            if (mp.opacity <= 0) extraMagicParticles.splice(i, 1);
+        }
 
         requestAnimationFrame(animate);
     }
 
-    // --- 4. Text & Interaction Logic ---
+    // --- 4. Logic & Gestures ---
     const poemText = document.getElementById('poem-text');
     const poemCard = document.getElementById('poem-card');
-
-    function updateStanza() {
-        if (isTransitioning) return;
-        isTransitioning = true;
-
-        // Fade out
-        poemCard.classList.add('hidden');
-
-        setTimeout(() => {
-            // Update text
-            poemText.innerText = stanzas[currentIndex];
-            
-            // Update particle color palette
-            currentGlobalColor = colorPalettes[currentIndex % colorPalettes.length];
-
-            // Morph shape if halfway through the poem
-            if (currentIndex >= Math.floor(stanzas.length / 2)) {
-                targetShape = 'heart';
-            } else {
-                targetShape = 'sphere';
-            }
-
-            // Fade in
-            poemCard.classList.remove('hidden');
-            isTransitioning = false;
-        }, 800); // Wait for CSS fade out to finish
-    }
+    const promptText = document.getElementById('hug-prompt');
+    const controlsHint = document.getElementById('controls-hint');
 
     function advance() {
-        if (currentIndex < stanzas.length - 1) {
+        if (isTransitioning || currentIndex >= stanzas.length - 1) return;
+        isTransitioning = true;
+        poemCard.style.opacity = '0';
+
+        setTimeout(() => {
             currentIndex++;
-            updateStanza();
+            poemText.innerText = stanzas[currentIndex];
+            currentGlobalColor = colorPalettes[currentIndex % colorPalettes.length];
+
+            // Morph half way
+            if (currentIndex >= Math.floor(stanzas.length / 2)) targetShape = 'heart';
+
+            poemCard.style.opacity = '1';
+            isTransitioning = false;
+        }, 800);
+    }
+
+    function getDistance(p1, p2) {
+        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+    }
+
+    // --- 5. MediaPipe Integration ---
+    const videoElement = document.getElementById('input_video');
+    const camCanvas = document.getElementById('camera_canvas');
+    const camCtx = camCanvas.getContext('2d');
+    const loadingText = document.getElementById('loading');
+
+    function onResults(results) {
+        if(loadingText.style.display !== 'none') {
+            loadingText.style.display = 'none';
+            promptText.style.display = 'block'; // Show instructions once ready
+        }
+
+        camCanvas.width = videoElement.videoWidth; camCanvas.height = videoElement.videoHeight;
+        camCtx.clearRect(0, 0, camCanvas.width, camCanvas.height);
+
+        // Draw camera feed slightly
+        camCtx.drawImage(results.image, 0, 0, camCanvas.width, camCanvas.height);
+
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+            
+            // Draw landmarks for feedback
+            for (const landmarks of results.multiHandLandmarks) {
+                drawConnectors(camCtx, landmarks, HAND_CONNECTIONS, {color: 'rgba(255,255,255,0.2)', lineWidth: 1});
+                drawLandmarks(camCtx, landmarks, {color: 'rgba(255,255,255,0.5)', radius: 1});
+            }
+
+            // Two-hand gestures
+            if (results.multiHandLandmarks.length >= 2) {
+                const hand1 = results.multiHandLandmarks[0];
+                const hand2 = results.multiHandLandmarks[1];
+
+                // 1. THE HUG: To reveal the poem initially
+                const hugDist = getDistance(hand1[0], hand2[0]);
+                if (hugDist < 0.3 && !isRevealed) {
+                    isRevealed = true;
+                    promptText.style.display = 'none';
+                    poemText.innerText = stanzas[0];
+                    poemCard.classList.add('visible');
+                    setTimeout(() => controlsHint.style.opacity = '1', 3000);
+                }
+
+                // 2. THE HEART: Extra Magic
+                const indexDist = getDistance(hand1[8], hand2[8]);
+                const thumbDist = getDistance(hand1[4], hand2[4]);
+                if (indexDist < 0.08 && thumbDist < 0.08 && isRevealed) {
+                    // Spawn magic particles from center of screen
+                    for(let i=0; i<5; i++) {
+                        extraMagicParticles.push({
+                            x: width/2 + (Math.random()-0.5)*50,
+                            y: height/2 + (Math.random()-0.5)*50,
+                            vx: (Math.random()-0.5)*8, vy: (Math.random()-0.5)*8,
+                            size: Math.random()*3 + 1, opacity: 1
+                        });
+                    }
+                }
+            }
+
+            // One-hand gestures (SWIPE to advance)
+            if (isRevealed) {
+                const wristX = results.multiHandLandmarks[0][0].x; // Normalized X
+                const now = Date.now();
+                
+                if (lastHandX !== null) {
+                    let deltaX = wristX - lastHandX;
+                    // If hand moves rapidly horizontally and 2 seconds have passed since last swipe
+                    if (Math.abs(deltaX) > 0.08 && (now - lastSwipeTime) > 2000) {
+                        advance();
+                        lastSwipeTime = now;
+                    }
+                }
+                lastHandX = wristX;
+            }
+
+        } else {
+            lastHandX = null; // Reset swipe tracker if hands leave screen
         }
     }
 
-    // Initialize first stanza
-    poemText.innerText = stanzas[0];
+    // Fallback click listener just in case camera tracking is hard in low light
+    document.addEventListener('click', () => { if(isRevealed) advance(); });
+
+    const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+    hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+    hands.onResults(onResults);
+
+    const camera = new Camera(videoElement, {
+        onFrame: async () => { await hands.send({image: videoElement}); },
+        width: 1280, height: 720
+    });
+    
     initParticles();
     animate();
-
-    // Event Listeners (Click & Swipe)
-    document.addEventListener('click', advance);
-
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    document.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-    });
-
-    document.addEventListener('touchend', e => {
-        let touchEndX = e.changedTouches[0].screenX;
-        let touchEndY = e.changedTouches[0].screenY;
-        
-        // Calculate distance swiped
-        let deltaX = touchEndX - touchStartX;
-        let deltaY = touchEndY - touchStartY;
-        
-        // If swiped significantly (horizontally or vertically), advance
-        if (Math.abs(deltaX) > 40 || Math.abs(deltaY) > 40) {
-            advance();
-        }
-    });
+    camera.start();
 
 </script>
 </body>
