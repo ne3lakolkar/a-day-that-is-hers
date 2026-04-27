@@ -4,440 +4,347 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Day That Is Hers</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --glass-bg: rgba(15, 20, 35, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-primary: #f0f0ff;
-            --text-accent: #b095d1; /* Soft sunset purple */
+            --glass-bg: rgba(15, 20, 35, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: rgba(255, 255, 255, 0.95);
         }
 
         body { 
             margin: 0; 
-            background: #05050a; 
-            font-family: 'Georgia', serif; 
+            background: #0a0b12; /* Deep space background */
+            font-family: 'Caveat', cursive; /* Handwritten font applied */
             overflow: hidden; 
-            color: var(--text-primary); 
+            color: var(--text-primary);
+            user-select: none;
+            cursor: pointer;
         }
 
-        #video-container { 
-            position: relative; 
-            width: 100vw; 
-            height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-        }
-
-        /* The camera feed needs to be flipped horizontally so it acts like a mirror */
-        video, canvas { 
-            position: absolute; 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            transform: scaleX(-1); 
-        }
-
-        #effects_canvas { 
-            z-index: 5; 
-            pointer-events: none; 
-        }
-
-        /* Overlay that darkens the video once the poem is revealed */
-        #backdrop-dimmer {
+        canvas {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 15, 30, 0.0);
-            z-index: 4;
-            transition: background 2s ease;
-            pointer-events: none;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
         }
 
-        #backdrop-dimmer.active {
-            background: rgba(10, 15, 30, 0.85); /* Deepens to match the 'style' */
-        }
-
-        #ui-layer { 
-            position: absolute; 
-            z-index: 10; 
-            width: 100%; 
-            height: 100%;
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            pointer-events: none; 
-        }
-
-        .instruction { 
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 1.2rem; 
-            letter-spacing: 2px; 
-            text-transform: uppercase; 
-            background: rgba(0,0,0,0.5);
-            padding: 15px 30px;
-            border-radius: 30px;
-            backdrop-filter: blur(5px);
-            transition: opacity 1s ease;
-        }
-
-        .heart-hint { 
-            margin-top: 20px; 
-            font-size: 0.9rem; 
-            color: var(--text-accent); 
-            opacity: 0;
-            transition: opacity 2s ease;
-            font-family: 'Segoe UI', sans-serif;
+            pointer-events: none; /* Let clicks pass through to the document listener */
         }
 
         #poem-card { 
             background: var(--glass-bg); 
-            padding: 3rem 4rem; 
+            padding: 3rem 2.5rem; 
             border-radius: 20px; 
             border: 1px solid var(--glass-border); 
-            backdrop-filter: blur(15px); 
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5); 
-            max-width: 600px;
-            max-height: 70vh;
-            overflow-y: auto;
+            backdrop-filter: blur(12px); 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); 
+            max-width: 90vw;
+            width: 500px;
             text-align: center;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 2s ease;
-            pointer-events: auto; /* Allow scrolling inside the card */
-            /* Hide scrollbar for a cleaner look */
-            -ms-overflow-style: none;  
-            scrollbar-width: none;  
-        }
-
-        #poem-card::-webkit-scrollbar { 
-            display: none; 
-        }
-
-        #poem-card.visible {
+            transition: opacity 0.8s ease, transform 0.8s ease;
             opacity: 1;
             transform: translateY(0);
         }
 
+        #poem-card.hidden {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
         .stanza {
-            margin-bottom: 1.5rem;
-            line-height: 1.8;
-            font-size: 1.1rem;
+            font-size: 1.8rem; /* Adjusted for the handwritten font */
+            line-height: 1.5;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            white-space: pre-line; /* Respects line breaks in the JS array */
         }
 
-        .purple-heart {
-            color: var(--text-accent);
-            font-size: 1.5rem;
-            margin-top: 1rem;
-        }
-
-        /* Simple loading state */
-        #loading {
+        .hint {
             position: absolute;
-            z-index: 20;
+            bottom: 40px;
             font-family: 'Segoe UI', sans-serif;
-            letter-spacing: 2px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
         }
     </style>
 </head>
 <body>
 
-<div id="video-container">
-    <video id="input_video" autoplay playsinline></video>
-    <canvas id="output_canvas"></canvas>
-    <div id="backdrop-dimmer"></div>
-    <canvas id="effects_canvas"></canvas>
-    
-    <div id="loading">WAKING UP THE CAMERA...</div>
+    <canvas id="particleCanvas"></canvas>
 
     <div id="ui-layer">
-        <div id="hug-prompt" class="instruction">Bring both hands together to begin...</div>
-        
         <div id="poem-card">
-            <div class="stanza">
-                Some people arrive into a day<br>
-                and nothing really changes shape,<br>
-                The hours pass the way they do,<br>
-                the sky remains the same escape.
-            </div>
-            <div class="stanza">
-                But then there are days like this—<br>
-                the kind that feel a little more aware,<br>
-                As if the world remembers softly<br>
-                that someone like her is here.
-            </div>
-            <div class="stanza">
-                Not in a way that asks for noise,<br>
-                or celebration loud and bright,<br>
-                But in the way small things align<br>
-                a little better in her light.
-            </div>
-            <div class="stanza">
-                She doesn’t try to be remarkable,<br>
-                doesn’t gather attention or claim,<br>
-                Yet somehow everything around her<br>
-                feels steadier just the same.
-            </div>
-            <div class="stanza">
-                The way she carries every moment,<br>
-                as if time trusts her with its weight,<br>
-                Not rushing through, not falling behind,<br>
-                just meeting each piece at its state.
-            </div>
-            <div class="stanza">
-                There’s something rare in how she moves,<br>
-                like calm stitched carefully with grace,<br>
-                Like even the busiest days she holds<br>
-                can’t quite disturb her inner pace.
-            </div>
-            <div class="stanza">
-                And still, within all of that strength,<br>
-                there’s softness she never misplaces—<br>
-                In the way she listens, understands,<br>
-                in the way she reads unspoken spaces.
-            </div>
-            <div class="stanza">
-                She notices things most overlook,<br>
-                the little shifts, the hidden hue,<br>
-                The quiet beauty in passing skies,<br>
-                the kind of things that stay with you.
-            </div>
-            <div class="stanza">
-                Maybe that’s why the world feels different<br>
-                when she looks at it for a while—<br>
-                Because even a sunset seems to learn<br>
-                how to deepen just to match her style.
-            </div>
-            <div class="stanza">
-                And somewhere in all of this,<br>
-                someone stands a little to the side,<br>
-                Not trying to hold or change her course,<br>
-                just watching with a kind of quiet pride.
-            </div>
-            <div class="stanza">
-                Seeing how she’s become all this<br>
-                without needing help or a name,<br>
-                Building herself piece by piece<br>
-                into something steady and untamed.
-            </div>
-            <div class="stanza">
-                There’s admiration that doesn’t speak much,<br>
-                that doesn’t need to be explained,<br>
-                Just a quiet kind of awe that grows<br>
-                every time her presence remains.
-            </div>
-            <div class="stanza">
-                And maybe that’s what makes today<br>
-                feel different in its own calm way—<br>
-                Not because the world has changed,<br>
-                but because it’s her day.
-            </div>
-            <div class="stanza">
-                A day that doesn’t need grand words,<br>
-                or promises stretched too far ahead,<br>
-                Just the simple truth that who she is<br>
-                has already shaped so much instead.
-            </div>
-            <div class="stanza">
-                So here’s to the way she keeps growing—<br>
-                not louder, not faster, just true,<br>
-                Like a sky that keeps finding new colors<br>
-                and never forgets its blue.
-            </div>
-            <div class="stanza">
-                Here’s to everything she’s carried,<br>
-                everything she’s yet to be,<br>
-                To the quiet strength, the gentle care,<br>
-                to the person she’s already become so naturally.
-            </div>
-            <div class="stanza">
-                And if days keep moving forward like this,<br>
-                with all that she holds and creates,<br>
-                Then the world’s only getting better<br>
-                with every step she takes.
-            </div>
-            <div class="stanza">
-                Because some people don’t just pass through life—<br>
-                they change how it’s seen, how it’s felt, how it stays…<br><br>
-                …and today just happens to be hers.
-                <div class="purple-heart">💜</div>
-            </div>
+            <div id="poem-text" class="stanza"></div>
         </div>
-        
-        <div id="heart-hint" class="heart-hint">Try making a heart with your hands 🫶</div>
+        <div class="hint">Tap or Swipe to continue 🤍</div>
     </div>
-</div>
 
 <script>
-    // --- DOM Elements ---
-    const videoElement = document.getElementById('input_video');
-    const canvasElement = document.getElementById('output_canvas');
-    const canvasCtx = canvasElement.getContext('2d');
-    const effectsCanvas = document.getElementById('effects_canvas');
-    const effectsCtx = effectsCanvas.getContext('2d');
+    // --- 1. Poem Data & Colors ---
+    const stanzas = [
+        "Some people arrive into a day\nand nothing really changes shape,\nThe hours pass the way they do,\nthe sky remains the same escape.",
+        "But then there are days like this—\nthe kind that feel a little more aware,\nAs if the world remembers softly\nthat someone like her is here.",
+        "Not in a way that asks for noise,\nor celebration loud and bright,\nBut in the way small things align\na little better in her light.",
+        "She doesn’t try to be remarkable,\ndoesn’t gather attention or claim,\nYet somehow everything around her\nfeels steadier just the same.",
+        "The way she carries every moment,\nas if time trusts her with its weight,\nNot rushing through, not falling behind,\njust meeting each piece at its state.",
+        "There’s something rare in how she moves,\nlike calm stitched carefully with grace,\nLike even the busiest days she holds\ncan’t quite disturb her inner pace.",
+        "And still, within all of that strength,\nthere’s softness she never misplaces—\nIn the way she listens, understands,\nin the way she reads unspoken spaces.",
+        "She notices things most overlook,\nthe little shifts, the hidden hue,\nThe quiet beauty in passing skies,\nthe kind of things that stay with you.",
+        "Maybe that’s why the world feels different\nwhen she looks at it for a while—\nBecause even a sunset seems to learn\nhow to deepen just to match her style.",
+        "And somewhere in all of this,\nsomeone stands a little to the side,\nNot trying to hold or change her course,\njust watching with a kind of quiet pride.",
+        "Seeing how she’s become all this\nwithout needing help or a name,\nBuilding herself piece by piece\ninto something steady and untamed.",
+        "There’s admiration that doesn’t speak much,\nthat doesn’t need to be explained,\nJust a quiet kind of awe that grows\nevery time her presence remains.",
+        "And maybe that’s what makes today\nfeel different in its own calm way—\nNot because the world has changed,\nbut because it’s her day.",
+        "A day that doesn’t need grand words,\nor promises stretched too far ahead,\nJust the simple truth that who she is\nhas already shaped so much instead.",
+        "So here’s to the way she keeps growing—\nnot louder, not faster, just true,\nLike a sky that keeps finding new colors\nand never forgets its blue.",
+        "Here’s to everything she’s carried,\neverything she’s yet to be,\nTo the quiet strength, the gentle care,\nto the person she’s already become so naturally.",
+        "And if days keep moving forward like this,\nwith all that she holds and creates,\nThen the world’s only getting better\nwith every step she takes.",
+        "Because some people don’t just pass through life—\nthey change how it’s seen, how it’s felt, how it stays…\n\n…and today just happens to be hers. 💜"
+    ];
+
+    // Colors matching the "finding new colors" theme (R, G, B)
+    // Progresses from cool night blues/purples into warm sunset pinks/golds
+    const colorPalettes = [
+        {r: 100, g: 150, b: 255}, // Blue
+        {r: 120, g: 180, b: 255}, // Light Blue
+        {r: 140, g: 160, b: 255}, // Periwinkle
+        {r: 160, g: 140, b: 255}, // Soft Purple
+        {r: 180, g: 120, b: 240}, // Purple
+        {r: 200, g: 100, b: 220}, // Magenta
+        {r: 220, g: 90,  b: 180}, // Pink
+        {r: 240, g: 100, b: 140}, // Rose
+        {r: 255, g: 120, b: 100}, // Coral
+        {r: 255, g: 150, b: 80},  // Peach
+        {r: 255, g: 180, b: 60},  // Gold
+        {r: 255, g: 200, b: 80},  // Warm Gold
+        {r: 255, g: 220, b: 100}, // Soft Yellow
+        {r: 255, g: 180, b: 150}, // Sunset Blush
+        {r: 220, g: 140, b: 200}, // Twilight Pink
+        {r: 180, g: 120, b: 240}, // Deep Twilight
+        {r: 150, g: 100, b: 255}, // Night Purple
+        {r: 180, g: 130, b: 255}  // Final Bright Purple
+    ];
+
+    let currentIndex = 0;
+    let isTransitioning = false;
+
+    // --- 2. Canvas & Particle System Setup ---
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    const particles = [];
+    const numParticles = 1500;
     
-    const poemCard = document.getElementById('poem-card');
-    const promptText = document.getElementById('hug-prompt');
-    const heartHint = document.getElementById('heart-hint');
-    const dimmer = document.getElementById('backdrop-dimmer');
-    const loadingText = document.getElementById('loading');
+    // Global transform state
+    let rotationX = 0;
+    let rotationY = 0;
+    let targetShape = 'sphere'; // 'sphere' or 'heart'
+    let currentGlobalColor = colorPalettes[0];
 
-    // --- State Variables ---
-    let isRevealed = false;
-    let isHeartDetected = false;
-    let sunsetParticles = [];
+    function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-    // --- Particle System (The "New Colors" Sky Effect) ---
-    class SunsetParticle {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-            this.vx = (Math.random() - 0.5) * 4;
-            this.vy = (Math.random() - 1) * 3 - 2; // Float upwards
-            this.size = Math.random() * 8 + 3;
-            // Generate soft sunset hues: warm pinks, soft purples, golds
-            const hues = [330, 270, 45, 15]; 
-            const hue = hues[Math.floor(Math.random() * hues.length)];
-            this.color = `hsla(${hue}, 80%, 70%, 0.8)`;
-            this.life = 1.0;
-            this.decay = Math.random() * 0.02 + 0.01;
+    // Generate coordinates for both shapes for every particle
+    function initParticles() {
+        for (let i = 0; i < numParticles; i++) {
+            // --- Sphere Coordinates (Fibonacci Sphere for even distribution) ---
+            const phi = Math.acos(-1 + (2 * i) / numParticles);
+            const theta = Math.sqrt(numParticles * Math.PI) * phi;
+            const r = width < 600 ? 120 : 200; // Smaller on mobile
+            
+            const sx = r * Math.cos(theta) * Math.sin(phi);
+            const sy = r * Math.sin(theta) * Math.sin(phi);
+            const sz = r * Math.cos(phi);
+
+            // --- Heart Coordinates (3D Parametric) ---
+            const t = Math.random() * Math.PI * 2;
+            const hx2D = 16 * Math.pow(Math.sin(t), 3);
+            const hy2D = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+            
+            // Extrude into a 3D volume
+            const angle = (Math.random() - 0.5) * Math.PI; 
+            const scale = width < 600 ? 5 : 8; // Smaller on mobile
+            const hx = (hx2D * scale) * Math.cos(angle);
+            const hz = (hx2D * scale) * Math.sin(angle);
+            const hy = hy2D * scale;
+
+            particles.push({
+                x: sx, y: sy, z: sz, // Current positions start at sphere
+                targetX: sx, targetY: sy, targetZ: sz,
+                sphere: {x: sx, y: sy, z: sz},
+                heart: {x: hx, y: hy, z: hz},
+                color: {r: currentGlobalColor.r, g: currentGlobalColor.g, b: currentGlobalColor.b},
+                size: Math.random() * 1.5 + 0.5,
+                speed: Math.random() * 0.04 + 0.02
+            });
         }
+    }
 
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            this.life -= this.decay;
-        }
+    // --- 3. Animation Loop ---
+    function animate() {
+        ctx.fillStyle = 'rgba(10, 11, 18, 0.2)'; // Creates trailing effect
+        ctx.fillRect(0, 0, width, height);
 
-        draw(ctx) {
+        // Auto-rotate the system
+        rotationY += 0.003;
+        rotationX += 0.001;
+
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        particles.forEach(p => {
+            // Update target shape based on global state
+            if (targetShape === 'heart') {
+                p.targetX = p.heart.x; p.targetY = p.heart.y; p.targetZ = p.heart.z;
+            } else {
+                p.targetX = p.sphere.x; p.targetY = p.sphere.y; p.targetZ = p.sphere.z;
+            }
+
+            // Smoothly interpolate position (The Morph)
+            p.x += (p.targetX - p.x) * p.speed;
+            p.y += (p.targetY - p.y) * p.speed;
+            p.z += (p.targetZ - p.z) * p.speed;
+
+            // Smoothly interpolate color per particle
+            p.color.r += (currentGlobalColor.r - p.color.r) * 0.05;
+            p.color.g += (currentGlobalColor.g - p.color.g) * 0.05;
+            p.color.b += (currentGlobalColor.b - p.color.b) * 0.05;
+
+            // Apply 3D Rotations
+            let cosX = Math.cos(rotationX), sinX = Math.sin(rotationX);
+            let cosY = Math.cos(rotationY), sinY = Math.sin(rotationY);
+
+            // Rotate Y
+            let x1 = p.x * cosY - p.z * sinY;
+            let z1 = p.z * cosY + p.x * sinY;
+            // Rotate X
+            let y1 = p.y * cosX - z1 * sinX;
+            let z2 = z1 * cosX + p.y * sinX;
+
+            // Project 3D to 2D
+            const perspective = 600 / (600 + z2);
+            const drawX = centerX + x1 * perspective;
+            const drawY = centerY + y1 * perspective;
+            const drawSize = Math.max(0.1, p.size * perspective);
+
+            // Add slight heartbeat pulse if in heart mode
+            let currentSize = drawSize;
+            if (targetShape === 'heart') {
+                const pulse = Math.sin(Date.now() * 0.005) * 0.5 + 1;
+                currentSize *= pulse;
+            }
+
+            // Draw Particle
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fillStyle = this.color;
-            ctx.globalAlpha = Math.max(0, this.life);
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = this.color;
+            ctx.arc(drawX, drawY, currentSize, 0, Math.PI * 2);
+            ctx.fillStyle = `rgb(${Math.floor(p.color.r)}, ${Math.floor(p.color.g)}, ${Math.floor(p.color.b)})`;
             ctx.fill();
-            ctx.globalAlpha = 1.0;
-            ctx.shadowBlur = 0;
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    // --- 4. Text & Interaction Logic ---
+    const poemText = document.getElementById('poem-text');
+    const poemCard = document.getElementById('poem-card');
+
+    function updateStanza() {
+        if (isTransitioning) return;
+        isTransitioning = true;
+
+        // Fade out
+        poemCard.classList.add('hidden');
+
+        setTimeout(() => {
+            // Update text
+            poemText.innerText = stanzas[currentIndex];
+            
+            // Update particle color palette
+            currentGlobalColor = colorPalettes[currentIndex % colorPalettes.length];
+
+            // Morph shape if halfway through the poem
+            if (currentIndex >= Math.floor(stanzas.length / 2)) {
+                targetShape = 'heart';
+            } else {
+                targetShape = 'sphere';
+            }
+
+            // Fade in
+            poemCard.classList.remove('hidden');
+            isTransitioning = false;
+        }, 800); // Wait for CSS fade out to finish
+    }
+
+    function advance() {
+        if (currentIndex < stanzas.length - 1) {
+            currentIndex++;
+            updateStanza();
         }
     }
 
-    function animateEffects() {
-        // Resize canvas to match window
-        effectsCanvas.width = window.innerWidth;
-        effectsCanvas.height = window.innerHeight;
-        effectsCtx.clearRect(0, 0, effectsCanvas.width, effectsCanvas.height);
+    // Initialize first stanza
+    poemText.innerText = stanzas[0];
+    initParticles();
+    animate();
 
-        // Update and draw particles
-        for (let i = sunsetParticles.length - 1; i >= 0; i--) {
-            let p = sunsetParticles[i];
-            p.update();
-            p.draw(effectsCtx);
-            if (p.life <= 0) {
-                sunsetParticles.splice(i, 1);
-            }
+    // Event Listeners (Click & Swipe)
+    document.addEventListener('click', advance);
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    });
+
+    document.addEventListener('touchend', e => {
+        let touchEndX = e.changedTouches[0].screenX;
+        let touchEndY = e.changedTouches[0].screenY;
+        
+        // Calculate distance swiped
+        let deltaX = touchEndX - touchStartX;
+        let deltaY = touchEndY - touchStartY;
+        
+        // If swiped significantly (horizontally or vertically), advance
+        if (Math.abs(deltaX) > 40 || Math.abs(deltaY) > 40) {
+            advance();
         }
-        requestAnimationFrame(animateEffects);
-    }
-    animateEffects();
-
-    // --- Math Helpers ---
-    function getDistance(p1, p2) {
-        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
-    }
-
-    // --- MediaPipe Processing ---
-    function onResults(results) {
-        // Hide loading text once frames are processing
-        if(loadingText.style.display !== 'none') loadingText.style.display = 'none';
-
-        // Match canvas dimensions to the video intrinsic dimensions
-        if (canvasElement.width !== videoElement.videoWidth) {
-            canvasElement.width = videoElement.videoWidth;
-            canvasElement.height = videoElement.videoHeight;
-        }
-
-        canvasCtx.save();
-        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-
-        if (results.multiHandLandmarks && results.multiHandLandmarks.length >= 2) {
-            const hand1 = results.multiHandLandmarks[0];
-            const hand2 = results.multiHandLandmarks[1];
-
-            // 1. Check for Hug (Wrists close together)
-            const hugDist = getDistance(hand1[0], hand2[0]);
-            if (hugDist < 0.3 && !isRevealed) {
-                isRevealed = true;
-                promptText.style.opacity = '0';
-                setTimeout(() => { promptText.style.display = 'none'; }, 1000);
-                
-                dimmer.classList.add('active');
-                poemCard.classList.add('visible');
-                
-                // Show heart hint a few seconds after reveal
-                setTimeout(() => {
-                    heartHint.style.opacity = '1';
-                }, 5000);
-            }
-
-            // 2. Check for Heart (Index tips and Thumb tips close together)
-            const indexDist = getDistance(hand1[8], hand2[8]);
-            const thumbDist = getDistance(hand1[4], hand2[4]);
-
-            isHeartDetected = (indexDist < 0.08 && thumbDist < 0.08);
-
-            // Draw the hand landmarks (soft white/purple lines)
-            for (const landmarks of results.multiHandLandmarks) {
-                drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, 
-                    {color: isHeartDetected ? '#b095d1' : 'rgba(255, 255, 255, 0.4)', lineWidth: 2});
-                drawLandmarks(canvasCtx, landmarks, 
-                    {color: 'rgba(255, 255, 255, 0.8)', lineWidth: 1, radius: 2});
-            }
-
-            // 3. Trigger Particle Magic from the center of the hands
-            if (isHeartDetected) {
-                // Calculate rough center point between the two hands for particle origin
-                // Note: Coordinates are normalized (0-1), need to map to window dimensions
-                // Because canvas is mirrored (scaleX(-1)), we invert the X coordinate for the visual effects layer
-                const centerX = (1 - ((hand1[8].x + hand2[8].x) / 2)) * window.innerWidth;
-                const centerY = ((hand1[8].y + hand2[8].y) / 2) * window.innerHeight;
-
-                // Spawn a few particles per frame while heart is held
-                for(let i = 0; i < 3; i++) {
-                    sunsetParticles.push(new SunsetParticle(centerX, centerY));
-                }
-            }
-        }
-        canvasCtx.restore();
-    }
-
-    // --- Initialize MediaPipe ---
-    const hands = new Hands({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
     });
-    hands.setOptions({ 
-        maxNumHands: 2, 
-        modelComplexity: 1, 
-        minDetectionConfidence: 0.5, 
-        minTrackingConfidence: 0.5 
-    });
-    hands.onResults(onResults);
 
-    // --- Initialize Camera ---
-    const camera = new Camera(videoElement, {
-        onFrame: async () => {
-            await hands.send({image: videoElement});
-        },
-        width: 1280, 
-        height: 720
-    });
-    camera.start().catch(err => {
-        console.error("Camera access denied or unavailable", err);
-        loadingText.innerText = "Please allow camera access to view this experience.";
-    });
 </script>
 </body>
 </html>
