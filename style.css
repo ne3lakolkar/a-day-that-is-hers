@@ -1,0 +1,136 @@
+/* --- Global Styles & Cosmic Vibe --- */
+:root {
+    --bg-color-1: #0a0b12; /* Deep Space */
+    --bg-color-2: #1c2e4a; /* Blue Hour Twilight */
+    --text-color: rgba(240, 240, 255, 0.95);
+    --accent-color: #9e7bb5; /* Soft Purple Heart */
+    --body-font: 'Georgia', serif; /* Elegant, steady serif */
+    --heading-font: 'Helvetica Neue', Arial, sans-serif; /* Clean, modern for conclusion */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color-1);
+    color: var(--text-color);
+    font-family: var(--body-font);
+    font-size: 1.1rem;
+    line-height: 1.8;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* --- Particle Canvas --- */
+#particleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1; /* Behind content */
+    opacity: 0.6;
+}
+
+/* --- 3D Scene Core --- */
+#scene-wrapper {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2; /* Main content layer */
+    perspective: 1000px; /* Essential for 3D effect */
+    perspective-origin: 50% 50%; /* Center the camera perspective */
+}
+
+/* This layer receives the pan/tilt rotation from JS */
+#camera-aim {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out; /* Smooths the mouse movement */
+}
+
+/* This container holds all the content */
+#content-3d {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+}
+
+/* --- Poem Stanzas (The Constellations) --- */
+.stanza {
+    position: absolute;
+    left: 10vw; /* Offset horizontally */
+    top: 0vh; /* Will be set dynamically by JS to stack */
+    width: 80vw;
+    max-width: 700px;
+    padding: 2rem;
+    opacity: 0; /* Hidden initially, revealed by ScrollTrigger */
+    transform-style: preserve-3d; /* Keep children in 3D space */
+}
+
+.stanza p {
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+/* Dynamic depth classes to place stanzas in Z-space */
+/* Depth 1 is close, Depth 6 is deep */
+.depth-1 { transform: translateZ(50px); }
+.depth-2 { transform: translateZ(0px); }
+.depth-3 { transform: translateZ(-100px); }
+.depth-4 { transform: translateZ(-250px); }
+.depth-5 { transform: translateZ(-400px); }
+.depth-6 { transform: translateZ(-600px); }
+.depth-7 { transform: translateZ(-800px); } /* For the final panel */
+
+/* --- Conclusion --- */
+.final-panel {
+    position: absolute;
+    left: 10vw;
+    width: 80vw;
+    max-width: 800px;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+    opacity: 0; /* Reveal with ScrollTrigger */
+}
+
+.final-panel .message {
+    transform-style: preserve-3d;
+}
+
+.birthday-wish {
+    font-family: var(--heading-font);
+    color: var(--accent-color);
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 25px rgba(158, 123, 181, 0.6);
+}
+
+.final-panel .subtitle {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    body { font-size: 1rem; }
+    .stanza, .final-panel { left: 5vw; width: 90vw; }
+    .birthday-wish { font-size: 1.8rem; }
+}
