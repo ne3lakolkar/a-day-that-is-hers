@@ -3,433 +3,1176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Day That Is Hers</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
-    
+    <title>A Day That's Yours ✨</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --glass-bg: rgba(10, 15, 25, 0.5);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-primary: rgba(255, 255, 255, 0.95);
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body { 
             margin: 0; 
-            background: #050508; 
-            font-family: 'Caveat', cursive; 
             overflow: hidden; 
-            color: var(--text-primary);
-            user-select: none;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1447 50%, #2d1b4e 100%);
+            font-family: 'Outfit', sans-serif; 
+            color: #fff;
         }
-
-        #video-container { 
-            position: relative; 
-            width: 100vw; 
-            height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-        }
-
-        /* Camera feed: mirrored and dimmed heavily to keep focus on particles */
-        video { display: none; }
-        #camera_canvas {
-            position: absolute;
-            width: 100%; height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-            opacity: 0.15; /* Subtle background presence */
+        
+        canvas { 
+            display: block; 
+            position: fixed;
+            top: 0;
+            left: 0;
             z-index: 1;
         }
-
-        #particle_canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: 2;
-            pointer-events: none;
+        
+        #video-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 180px;
+            height: 135px;
+            border: 2px solid rgba(255, 215, 180, 0.3);
+            border-radius: 12px;
+            z-index: 100;
+            opacity: 0.5;
+            transform: scaleX(-1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.2);
+            transition: opacity 0.3s ease;
         }
-
-        #ui-layer {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
+        
+        #video-container:hover {
+            opacity: 0.8;
+        }
+        
+        video { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+        
+        #ui-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 10;
+            pointer-events: none;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: 40px;
         }
-
-        .instruction { 
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 1.1rem; 
-            letter-spacing: 2px; 
-            text-transform: uppercase; 
-            background: rgba(0,0,0,0.6);
-            padding: 15px 30px;
-            border-radius: 30px;
-            backdrop-filter: blur(5px);
-            transition: opacity 1s ease;
-        }
-
-        #poem-card { 
-            background: var(--glass-bg); 
-            padding: 3rem 2.5rem; 
-            border-radius: 20px; 
-            border: 1px solid var(--glass-border); 
-            backdrop-filter: blur(12px); 
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); 
-            max-width: 90vw;
-            width: 550px;
+        
+        #poem-container {
+            max-width: 800px;
             text-align: center;
-            transition: opacity 0.8s ease, transform 0.8s ease;
-            opacity: 0; /* Hidden initially */
+            opacity: 0;
             transform: translateY(20px);
-            pointer-events: none;
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        #poem-card.visible {
+        
+        #poem-container.visible {
             opacity: 1;
             transform: translateY(0);
         }
-
+        
         .stanza {
-            font-size: 2rem; 
-            line-height: 1.4;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-            white-space: pre-line; 
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            line-height: 2.2;
+            font-weight: 300;
+            color: #ffd7b4;
+            text-shadow: 0 0 20px rgba(255, 215, 180, 0.4);
+            margin-bottom: 2rem;
+            letter-spacing: 0.5px;
         }
-
-        .hint {
-            position: absolute;
-            bottom: 40px;
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.6);
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
+        
+        .stanza-line {
             opacity: 0;
+            transform: translateX(-10px);
+            animation: lineReveal 0.8s ease forwards;
+        }
+        
+        @keyframes lineReveal {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        #controls-hint {
+            position: fixed;
+            bottom: 180px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 215, 180, 0.2);
+            font-size: 0.85rem;
+            color: #ffd7b4;
+            max-width: 280px;
+            z-index: 100;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: all 0.5s ease;
+        }
+        
+        #controls-hint.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .control-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            gap: 12px;
+        }
+        
+        .control-icon {
+            font-size: 1.3rem;
+            min-width: 30px;
+        }
+        
+        #shape-info {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            max-width: 400px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 215, 180, 0.2);
+            z-index: 100;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        #shape-info.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        #shape-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #ffd7b4;
+            margin-bottom: 12px;
+            text-shadow: 0 0 15px rgba(255, 215, 180, 0.3);
+        }
+        
+        #shape-meaning {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: #d4c5b9;
+            font-weight: 300;
+        }
+        
+        #progress {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            font-size: 0.9rem;
+            color: rgba(255, 215, 180, 0.6);
+            z-index: 100;
+            font-weight: 300;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+        
+        #loading-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            color: #ffd7b4;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 215, 180, 0.4);
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto;
+            border: 3px solid rgba(255, 215, 180, 0.2);
+            border-top-color: #ffd7b4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        #title-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1447 50%, #2d1b4e 100%);
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             transition: opacity 1s ease;
         }
-
-        #loading {
-            position: absolute;
-            z-index: 20;
-            font-family: 'Segoe UI', sans-serif;
+        
+        #title-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        #main-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 300;
+            color: #ffd7b4;
+            text-shadow: 0 0 40px rgba(255, 215, 180, 0.6);
+            margin-bottom: 20px;
             letter-spacing: 2px;
+        }
+        
+        #subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 215, 180, 0.7);
+            margin-bottom: 60px;
+            font-weight: 300;
+        }
+        
+        #start-button {
+            padding: 18px 48px;
+            font-family: 'Outfit', sans-serif;
             font-size: 1rem;
+            font-weight: 400;
+            color: #1a1447;
+            background: linear-gradient(135deg, #ffd7b4 0%, #ffb88c 100%);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 215, 180, 0.3);
+            pointer-events: all;
+            letter-spacing: 1px;
+        }
+        
+        #start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(255, 215, 180, 0.5);
+        }
+        
+        @media (max-width: 768px) {
+            .stanza {
+                font-size: 1.1rem;
+                line-height: 2;
+            }
+            
+            #shape-info {
+                top: 20px;
+                left: 20px;
+                right: 20px;
+                max-width: none;
+                padding: 20px;
+            }
+            
+            #controls-hint {
+                bottom: 160px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+            
+            #video-container {
+                width: 120px;
+                height: 90px;
+                bottom: 10px;
+                right: 10px;
+            }
+            
+            #main-title {
+                font-size: 2.5rem;
+            }
         }
     </style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
-<div id="video-container">
-    <video id="input_video" autoplay playsinline></video>
-    <canvas id="camera_canvas"></canvas>
-    <canvas id="particle_canvas"></canvas>
-    
-    <div id="loading">WAKING UP THE CAMERA...</div>
-
-    <div id="ui-layer">
-        <div id="hug-prompt" class="instruction" style="display:none;">Bring both hands together to begin...</div>
-        
-        <div id="poem-card">
-            <div id="poem-text" class="stanza"></div>
-        </div>
-
-        <div id="controls-hint" class="hint">Swipe hand left/right to continue • Make a Heart 🫶 for magic</div>
+    <div id="title-screen">
+        <h1 id="main-title">A Day That's Yours ✨</h1>
+        <p id="subtitle">A gesture-controlled birthday poem</p>
+        <button id="start-button">Begin the Journey</button>
     </div>
-</div>
+
+    <div id="loading">
+        <div id="loading-text">Loading magical particles...</div>
+        <div class="spinner"></div>
+    </div>
+
+    <div id="ui-overlay">
+        <div id="poem-container"></div>
+    </div>
+    
+    <div id="shape-info">
+        <div id="shape-title"></div>
+        <div id="shape-meaning"></div>
+    </div>
+    
+    <div id="progress"></div>
+    
+    <div id="controls-hint">
+        <div class="control-item">
+            <span class="control-icon">👈👉</span>
+            <span>Swipe hand left/right to navigate</span>
+        </div>
+        <div class="control-item">
+            <span class="control-icon">✋</span>
+            <span>Raise hand to expand particles</span>
+        </div>
+        <div class="control-item">
+            <span class="control-icon">✊</span>
+            <span>Make fist to collapse</span>
+        </div>
+        <div class="control-item">
+            <span class="control-icon">👌</span>
+            <span>Pinch to pause and read</span>
+        </div>
+    </div>
+
+    <div id="video-container">
+        <video class="input_video"></video>
+    </div>
 
 <script>
-    // --- 1. Data State ---
-    const stanzas = [
-        "Some people arrive into a day\nand nothing really changes shape,\nThe hours pass the way they do,\nthe sky remains the same escape.",
-        "But then there are days like this—\nthe kind that feel a little more aware,\nAs if the world remembers softly\nthat someone like her is here.",
-        "Not in a way that asks for noise,\nor celebration loud and bright,\nBut in the way small things align\na little better in her light.",
-        "She doesn’t try to be remarkable,\ndoesn’t gather attention or claim,\nYet somehow everything around her\nfeels steadier just the same.",
-        "The way she carries every moment,\nas if time trusts her with its weight,\nNot rushing through, not falling behind,\njust meeting each piece at its state.",
-        "There’s something rare in how she moves,\nlike calm stitched carefully with grace,\nLike even the busiest days she holds\ncan’t quite disturb her inner pace.",
-        "And still, within all of that strength,\nthere’s softness she never misplaces—\nIn the way she listens, understands,\nin the way she reads unspoken spaces.",
-        "She notices things most overlook,\nthe little shifts, the hidden hue,\nThe quiet beauty in passing skies,\nthe kind of things that stay with you.",
-        "Maybe that’s why the world feels different\nwhen she looks at it for a while—\nBecause even a sunset seems to learn\nhow to deepen just to match her style.",
-        "And somewhere in all of this,\nsomeone stands a little to the side,\nNot trying to hold or change her course,\njust watching with a kind of quiet pride.",
-        "Seeing how she’s become all this\nwithout needing help or a name,\nBuilding herself piece by piece\ninto something steady and untamed.",
-        "There’s admiration that doesn’t speak much,\nthat doesn’t need to be explained,\nJust a quiet kind of awe that grows\nevery time her presence remains.",
-        "And maybe that’s what makes today\nfeel different in its own calm way—\nNot because the world has changed,\nbut because it’s her day.",
-        "A day that doesn’t need grand words,\nor promises stretched too far ahead,\nJust the simple truth that who she is\nhas already shaped so much instead.",
-        "So here’s to the way she keeps growing—\nnot louder, not faster, just true,\nLike a sky that keeps finding new colors\nand never forgets its blue.",
-        "Here’s to everything she’s carried,\neverything she’s yet to be,\nTo the quiet strength, the gentle care,\nto the person she’s already become so naturally.",
-        "And if days keep moving forward like this,\nwith all that she holds and creates,\nThen the world’s only getting better\nwith every step she takes.",
-        "Because some people don’t just pass through life—\nthey change how it’s seen, how it’s felt, how it stays…\n\n…and today just happens to be hers. 💜"
+    // Poem data with stanzas and their symbolic meanings
+    const poemData = [
+        {
+            lines: [
+                "Some people arrive into a day",
+                "and nothing really changes shape,",
+                "The hours pass the way they do,",
+                "the sky remains the same escape."
+            ],
+            shape: "orbit",
+            title: "The Orbit of Days",
+            meaning: "Gentle spirals representing the circular nature of ordinary days—each one revolving peacefully, waiting for someone extraordinary to give them meaning."
+        },
+        {
+            lines: [
+                "But then there are days like this—",
+                "the kind that feel a little more aware,",
+                "As if the world remembers softly",
+                "that someone like her is here."
+            ],
+            shape: "constellation",
+            title: "Awakened Stars",
+            meaning: "A constellation forms—scattered stars suddenly connecting into something meaningful, symbolizing how her presence brings awareness and connection to everything around her."
+        },
+        {
+            lines: [
+                "Not in a way that asks for noise,",
+                "or celebration loud and bright,",
+                "But in the way small things align",
+                "a little better in her light."
+            ],
+            shape: "gentle_waves",
+            title: "Soft Alignment",
+            meaning: "Gentle waves rippling outward—representing the quiet, graceful way she influences her surroundings without demanding attention, like calm water finding its level."
+        },
+        {
+            lines: [
+                "She doesn't try to be remarkable,",
+                "doesn't gather attention or claim,",
+                "Yet somehow everything around her",
+                "feels steadier just the same."
+            ],
+            shape: "anchor",
+            title: "The Quiet Anchor",
+            meaning: "A stable, grounded form—an anchor of calm in the chaos. She doesn't seek the spotlight, but provides stability and steadiness to those around her."
+        },
+        {
+            lines: [
+                "The way she carries every moment,",
+                "as if time trusts her with its weight,",
+                "Not rushing through, not falling behind,",
+                "just meeting each piece at its state."
+            ],
+            shape: "hourglass",
+            title: "Time's Keeper",
+            meaning: "An hourglass of flowing particles—time itself rendered visible, showing how she moves through moments with perfect presence, neither rushing nor lagging."
+        },
+        {
+            lines: [
+                "There's something rare in how she moves,",
+                "like calm stitched carefully with grace,",
+                "Like even the busiest days she holds",
+                "can't quite disturb her inner pace."
+            ],
+            shape: "balanced_yin",
+            title: "Grace & Strength United",
+            meaning: "A yin-yang of light and movement—calm and grace in perfect balance, showing the beautiful duality of strength that doesn't fight and peace that doesn't flee."
+        },
+        {
+            lines: [
+                "And still, within all of that strength,",
+                "there's softness she never misplaces—",
+                "In the way she listens, understands,",
+                "in the way she reads unspoken spaces."
+            ],
+            shape: "listening_eye",
+            title: "The Seeing Heart",
+            meaning: "An eye formed of particles—symbolizing her gift of truly seeing and hearing what others miss, noticing the unspoken, understanding the invisible."
+        },
+        {
+            lines: [
+                "She notices things most overlook,",
+                "the little shifts, the hidden hue,",
+                "The quiet beauty in passing skies,",
+                "the kind of things that stay with you."
+            ],
+            shape: "scattered_beauty",
+            title: "Collected Moments",
+            meaning: "Delicate particles gathering like precious findings—each one a small beauty she's noticed and held onto, the way some people collect seashells or moments of light."
+        },
+        {
+            lines: [
+                "Maybe that's why the world feels different",
+                "when she looks at it for a while—",
+                "Because even a sunset seems to learn",
+                "how to deepen just to match her style."
+            ],
+            shape: "sunset",
+            title: "The Deepening Sky",
+            meaning: "A horizon of warm, descending light—representing how even nature seems to respond to her presence, becoming more beautiful in reflection of who she is."
+        },
+        {
+            lines: [
+                "And somewhere in all of this,",
+                "someone stands a little to the side,",
+                "Not trying to hold or change her course,",
+                "just watching with a kind of quiet pride."
+            ],
+            shape: "heart",
+            title: "Quiet Admiration",
+            meaning: "A heart formed of golden light—the shape of admiration that doesn't need to speak, love that doesn't need to control, pride that simply witnesses and celebrates."
+        },
+        {
+            lines: [
+                "Seeing how she's become all this",
+                "without needing help or a name,",
+                "Building herself piece by piece",
+                "into something steady and untamed."
+            ],
+            shape: "growth_spiral",
+            title: "The Building Journey",
+            meaning: "An upward spiral of becoming—each revolution representing growth, each layer showing how she's constructed herself piece by piece into something magnificent and free."
+        },
+        {
+            lines: [
+                "There's admiration that doesn't speak much,",
+                "that doesn't need to be explained,",
+                "Just a quiet kind of awe that grows",
+                "every time her presence remains."
+            ],
+            shape: "expanding_awe",
+            title: "Growing Wonder",
+            meaning: "Particles expanding gently outward like a held breath—the visual of awe itself, that sense of wonder that keeps growing the more you witness someone truly remarkable."
+        },
+        {
+            lines: [
+                "And maybe that's what makes today",
+                "feel different in its own calm way—",
+                "Not because the world has changed,",
+                "but because it's her day."
+            ],
+            shape: "crown",
+            title: "Her Day",
+            meaning: "A crown of light particles—not demanding or loud, but gentle and radiant. Today belongs to her, and the universe knows it."
+        },
+        {
+            lines: [
+                "A day that doesn't need grand words,",
+                "or promises stretched too far ahead,",
+                "Just the simple truth that who she is",
+                "has already shaped so much instead."
+            ],
+            shape: "truth_sphere",
+            title: "Simple Truth",
+            meaning: "A perfect, complete sphere—representing wholeness and truth. No embellishment needed, just the pure reality of her impact rendered in light."
+        },
+        {
+            lines: [
+                "So here's to the way she keeps growing—",
+                "not louder, not faster, just true,",
+                "Like a sky that keeps finding new colors",
+                "and never forgets its blue."
+            ],
+            shape: "sky_layers",
+            title: "Endless Sky",
+            meaning: "Layers of color shifting and deepening—like a sky that constantly discovers new beauty while remaining fundamentally itself. Growth that's authentic, not performative."
+        },
+        {
+            lines: [
+                "Here's to everything she's carried,",
+                "everything she's yet to be,",
+                "To the quiet strength, the gentle care,",
+                "to the person she's already become so naturally."
+            ],
+            shape: "timeline",
+            title: "Past, Present, Future",
+            meaning: "A flowing timeline of particles—honoring everything she's carried, celebrating who she is now, and holding space for all she'll become."
+        },
+        {
+            lines: [
+                "And if days keep moving forward like this,",
+                "with all that she holds and creates,",
+                "Then the world's only getting better",
+                "with every step she takes."
+            ],
+            shape: "footsteps",
+            title: "The Path Forward",
+            meaning: "Particles forming footsteps stretching into infinity—each step she takes literally making the world better, leaving trails of light behind her."
+        },
+        {
+            lines: [
+                "Because some people don't just pass through life—",
+                "they change how it's seen, how it's felt, how it stays…",
+                "…and today just happens to be hers. 💜"
+            ],
+            shape: "universe",
+            title: "Her Universe",
+            meaning: "The complete celestial sphere—a universe unto herself. Not just living in the world, but fundamentally changing it by being in it. Everything, all at once."
+        }
     ];
 
-    const colorPalettes = [
-        {r: 100, g: 150, b: 255}, {r: 120, g: 180, b: 255}, {r: 140, g: 160, b: 255},
-        {r: 160, g: 140, b: 255}, {r: 180, g: 120, b: 240}, {r: 200, g: 100, b: 220},
-        {r: 220, g: 90,  b: 180}, {r: 240, g: 100, b: 140}, {r: 255, g: 120, b: 100},
-        {r: 255, g: 150, b: 80},  {r: 255, g: 180, b: 60},  {r: 255, g: 200, b: 80},
-        {r: 255, g: 220, b: 100}, {r: 255, g: 180, b: 150}, {r: 220, g: 140, b: 200},
-        {r: 180, g: 120, b: 240}, {r: 150, g: 100, b: 255}, {r: 180, g: 130, b: 255} 
-    ];
+    // Three.js Setup
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x0a0e27, 0.002);
 
-    let currentIndex = 0;
-    let isRevealed = false;
-    let isTransitioning = false;
-    
-    // Gesture Tracking State
-    let lastHandX = null;
-    let lastSwipeTime = 0;
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 35;
 
-    // --- 2. Setup 3D Particles ---
-    const canvas = document.getElementById('particle_canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    document.body.insertBefore(renderer.domElement, document.body.firstChild);
 
-    const particles = [];
-    const extraMagicParticles = []; // For the heart gesture
-    const numParticles = 800; // Optimized for running alongside MediaPipe
-    
-    let rotationX = 0, rotationY = 0;
-    let targetShape = 'sphere'; 
-    let currentGlobalColor = colorPalettes[0];
+    // Particles
+    const PARTICLE_COUNT = 15000;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(PARTICLE_COUNT * 3);
+    const colors = new Float32Array(PARTICLE_COUNT * 3);
+    const targetPositions = new Float32Array(PARTICLE_COUNT * 3);
 
-    function resize() {
-        width = window.innerWidth; height = window.innerHeight;
-        canvas.width = width; canvas.height = height;
-    }
-    window.addEventListener('resize', resize); resize();
-
-    function initParticles() {
-        for (let i = 0; i < numParticles; i++) {
-            // Sphere (Fibonacci)
-            const phi = Math.acos(-1 + (2 * i) / numParticles);
-            const theta = Math.sqrt(numParticles * Math.PI) * phi;
-            const r = width < 600 ? 120 : 200; 
-            const sx = r * Math.cos(theta) * Math.sin(phi);
-            const sy = r * Math.sin(theta) * Math.sin(phi);
-            const sz = r * Math.cos(phi);
-
-            // Heart (3D Parametric)
-            const t = Math.random() * Math.PI * 2;
-            const hx2D = 16 * Math.pow(Math.sin(t), 3);
-            const hy2D = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-            const angle = (Math.random() - 0.5) * Math.PI; 
-            const scale = width < 600 ? 6 : 9; 
-            const hx = (hx2D * scale) * Math.cos(angle);
-            const hz = (hx2D * scale) * Math.sin(angle);
-            const hy = hy2D * scale;
-
-            particles.push({
-                x: sx, y: sy, z: sz, 
-                targetX: sx, targetY: sy, targetZ: sz,
-                sphere: {x: sx, y: sy, z: sz},
-                heart: {x: hx, y: hy, z: hz},
-                color: {r: currentGlobalColor.r, g: currentGlobalColor.g, b: currentGlobalColor.b},
-                size: Math.random() * 2 + 0.5,
-                speed: Math.random() * 0.05 + 0.02
-            });
-        }
+    // Initialize
+    for (let i = 0; i < PARTICLE_COUNT * 3; i++) {
+        positions[i] = (Math.random() - 0.5) * 100;
+        colors[i] = 1.0;
+        targetPositions[i] = positions[i];
     }
 
-    // --- 3. Animation Loop ---
-    function animate() {
-        ctx.clearRect(0, 0, width, height);
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-        // Auto-rotate
-        rotationY += 0.005; rotationX += 0.002;
-        const centerX = width / 2; const centerY = height / 2;
+    const getSprite = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32; canvas.height = 32;
+        const context = canvas.getContext('2d');
+        const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
+        gradient.addColorStop(0, 'rgba(255, 215, 180, 1)');
+        gradient.addColorStop(0.3, 'rgba(255, 184, 140, 0.8)');
+        gradient.addColorStop(0.6, 'rgba(255, 140, 100, 0.3)');
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 32, 32);
+        const texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        return texture;
+    };
 
-        if(isRevealed) {
-            particles.forEach(p => {
-                // Determine target
-                if (targetShape === 'heart') {
-                    p.targetX = p.heart.x; p.targetY = p.heart.y; p.targetZ = p.heart.z;
-                } else {
-                    p.targetX = p.sphere.x; p.targetY = p.sphere.y; p.targetZ = p.sphere.z;
-                }
+    const material = new THREE.PointsMaterial({
+        size: 0.5,
+        vertexColors: true,
+        map: getSprite(),
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        transparent: true
+    });
 
-                // Morph interpolation
-                p.x += (p.targetX - p.x) * p.speed;
-                p.y += (p.targetY - p.y) * p.speed;
-                p.z += (p.targetZ - p.z) * p.speed;
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
 
-                // Color interpolation
-                p.color.r += (currentGlobalColor.r - p.color.r) * 0.05;
-                p.color.g += (currentGlobalColor.g - p.color.g) * 0.05;
-                p.color.b += (currentGlobalColor.b - p.color.b) * 0.05;
+    // Add ambient stars
+    const starGeometry = new THREE.BufferGeometry();
+    const starPositions = new Float32Array(2000 * 3);
+    for (let i = 0; i < 2000 * 3; i++) {
+        starPositions[i] = (Math.random() - 0.5) * 200;
+    }
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    const starMaterial = new THREE.PointsMaterial({
+        size: 0.3,
+        color: 0xffd7b4,
+        transparent: true,
+        opacity: 0.4
+    });
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
 
-                // 3D Math
-                let cosX = Math.cos(rotationX), sinX = Math.sin(rotationX);
-                let cosY = Math.cos(rotationY), sinY = Math.sin(rotationY);
-                let x1 = p.x * cosY - p.z * sinY; let z1 = p.z * cosY + p.x * sinY;
-                let y1 = p.y * cosX - z1 * sinX;  let z2 = z1 * cosX + p.y * sinX;
-
-                const perspective = 600 / (600 + z2);
-                const drawX = centerX + x1 * perspective;
-                const drawY = centerY + y1 * perspective;
-                const drawSize = Math.max(0.1, p.size * perspective);
-
-                let finalSize = drawSize;
-                if (targetShape === 'heart') finalSize *= (Math.sin(Date.now() * 0.005) * 0.3 + 1);
-
-                ctx.beginPath();
-                ctx.arc(drawX, drawY, finalSize, 0, Math.PI * 2);
-                ctx.fillStyle = `rgb(${Math.floor(p.color.r)}, ${Math.floor(p.color.g)}, ${Math.floor(p.color.b)})`;
-                ctx.fill();
-            });
-        }
-
-        // Handle Extra Magic Particles (from Heart gesture)
-        for (let i = extraMagicParticles.length - 1; i >= 0; i--) {
-            let mp = extraMagicParticles[i];
-            mp.x += mp.vx; mp.y += mp.vy;
-            mp.opacity -= 0.02;
-            
-            ctx.beginPath();
-            ctx.arc(mp.x, mp.y, mp.size, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 200, 255, ${mp.opacity})`;
-            ctx.shadowBlur = 10; ctx.shadowColor = 'white';
-            ctx.fill();
-            ctx.shadowBlur = 0; // reset
-
-            if (mp.opacity <= 0) extraMagicParticles.splice(i, 1);
-        }
-
-        requestAnimationFrame(animate);
+    // Shape generation functions
+    function getPointOnOrbit(i) {
+        const angle = (i / PARTICLE_COUNT) * Math.PI * 8;
+        const radius = 8 + Math.sin(angle * 3) * 2;
+        const height = Math.sin(angle * 1.5) * 3;
+        return {
+            x: radius * Math.cos(angle),
+            y: height,
+            z: radius * Math.sin(angle),
+            r: 1.0, g: 0.85, b: 0.7
+        };
     }
 
-    // --- 4. Logic & Gestures ---
-    const poemText = document.getElementById('poem-text');
-    const poemCard = document.getElementById('poem-card');
-    const promptText = document.getElementById('hug-prompt');
-    const controlsHint = document.getElementById('controls-hint');
-
-    function advance() {
-        if (isTransitioning || currentIndex >= stanzas.length - 1) return;
-        isTransitioning = true;
-        poemCard.style.opacity = '0';
-
-        setTimeout(() => {
-            currentIndex++;
-            poemText.innerText = stanzas[currentIndex];
-            currentGlobalColor = colorPalettes[currentIndex % colorPalettes.length];
-
-            // Morph half way
-            if (currentIndex >= Math.floor(stanzas.length / 2)) targetShape = 'heart';
-
-            poemCard.style.opacity = '1';
-            isTransitioning = false;
-        }, 800);
+    function getPointOnConstellation(i) {
+        // Create star cluster
+        const clusterCount = 12;
+        const cluster = Math.floor(i / (PARTICLE_COUNT / clusterCount));
+        const phi = (cluster / clusterCount) * Math.PI * 2;
+        const theta = Math.acos(-1 + (2 * cluster) / clusterCount);
+        const r = 12;
+        const cx = r * Math.cos(phi) * Math.sin(theta);
+        const cy = r * Math.sin(phi) * Math.sin(theta);
+        const cz = r * Math.cos(theta);
+        
+        const spread = 1.5;
+        return {
+            x: cx + (Math.random() - 0.5) * spread,
+            y: cy + (Math.random() - 0.5) * spread,
+            z: cz + (Math.random() - 0.5) * spread,
+            r: 1.0, g: 0.9, b: 0.75
+        };
     }
 
-    function getDistance(p1, p2) {
-        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+    function getPointOnGentleWaves(i) {
+        const x = ((i % 100) - 50) * 0.4;
+        const z = (Math.floor(i / 100) - 75) * 0.4;
+        const y = Math.sin(x * 0.3) * Math.cos(z * 0.3) * 3;
+        return {
+            x: x, y: y, z: z,
+            r: 0.9, g: 0.8, b: 0.7
+        };
     }
 
-    // --- 5. MediaPipe Integration ---
-    const videoElement = document.getElementById('input_video');
-    const camCanvas = document.getElementById('camera_canvas');
-    const camCtx = camCanvas.getContext('2d');
-    const loadingText = document.getElementById('loading');
-
-    function onResults(results) {
-        if(loadingText.style.display !== 'none') {
-            loadingText.style.display = 'none';
-            promptText.style.display = 'block'; // Show instructions once ready
-        }
-
-        camCanvas.width = videoElement.videoWidth; camCanvas.height = videoElement.videoHeight;
-        camCtx.clearRect(0, 0, camCanvas.width, camCanvas.height);
-
-        // Draw camera feed slightly
-        camCtx.drawImage(results.image, 0, 0, camCanvas.width, camCanvas.height);
-
-        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-            
-            // Draw landmarks for feedback
-            for (const landmarks of results.multiHandLandmarks) {
-                drawConnectors(camCtx, landmarks, HAND_CONNECTIONS, {color: 'rgba(255,255,255,0.2)', lineWidth: 1});
-                drawLandmarks(camCtx, landmarks, {color: 'rgba(255,255,255,0.5)', radius: 1});
-            }
-
-            // Two-hand gestures
-            if (results.multiHandLandmarks.length >= 2) {
-                const hand1 = results.multiHandLandmarks[0];
-                const hand2 = results.multiHandLandmarks[1];
-
-                // 1. THE HUG: To reveal the poem initially
-                const hugDist = getDistance(hand1[0], hand2[0]);
-                if (hugDist < 0.3 && !isRevealed) {
-                    isRevealed = true;
-                    promptText.style.display = 'none';
-                    poemText.innerText = stanzas[0];
-                    poemCard.classList.add('visible');
-                    setTimeout(() => controlsHint.style.opacity = '1', 3000);
-                }
-
-                // 2. THE HEART: Extra Magic
-                const indexDist = getDistance(hand1[8], hand2[8]);
-                const thumbDist = getDistance(hand1[4], hand2[4]);
-                if (indexDist < 0.08 && thumbDist < 0.08 && isRevealed) {
-                    // Spawn magic particles from center of screen
-                    for(let i=0; i<5; i++) {
-                        extraMagicParticles.push({
-                            x: width/2 + (Math.random()-0.5)*50,
-                            y: height/2 + (Math.random()-0.5)*50,
-                            vx: (Math.random()-0.5)*8, vy: (Math.random()-0.5)*8,
-                            size: Math.random()*3 + 1, opacity: 1
-                        });
-                    }
-                }
-            }
-
-            // One-hand gestures (SWIPE to advance)
-            if (isRevealed) {
-                const wristX = results.multiHandLandmarks[0][0].x; // Normalized X
-                const now = Date.now();
-                
-                if (lastHandX !== null) {
-                    let deltaX = wristX - lastHandX;
-                    // If hand moves rapidly horizontally and 2 seconds have passed since last swipe
-                    if (Math.abs(deltaX) > 0.08 && (now - lastSwipeTime) > 2000) {
-                        advance();
-                        lastSwipeTime = now;
-                    }
-                }
-                lastHandX = wristX;
-            }
-
+    function getPointOnAnchor(i) {
+        const isBase = i < PARTICLE_COUNT * 0.4;
+        if (isBase) {
+            const angle = (i / (PARTICLE_COUNT * 0.4)) * Math.PI * 2;
+            const radius = 6;
+            return {
+                x: radius * Math.cos(angle),
+                y: -8,
+                z: radius * Math.sin(angle),
+                r: 0.8, g: 0.7, b: 0.6
+            };
         } else {
-            lastHandX = null; // Reset swipe tracker if hands leave screen
+            const t = ((i - PARTICLE_COUNT * 0.4) / (PARTICLE_COUNT * 0.6));
+            const angle = t * Math.PI * 2 * 3;
+            const radius = 2 + t * 2;
+            return {
+                x: radius * Math.cos(angle),
+                y: -8 + t * 16,
+                z: radius * Math.sin(angle),
+                r: 1.0, g: 0.85, b: 0.7
+            };
         }
     }
 
-    // Fallback click listener just in case camera tracking is hard in low light
-    document.addEventListener('click', () => { if(isRevealed) advance(); });
+    function getPointOnHourglass(i) {
+        const t = i / PARTICLE_COUNT;
+        const angle = t * Math.PI * 2 * 8;
+        const height = (t - 0.5) * 20;
+        const radius = 5 * (1 - Math.abs(height) / 12);
+        return {
+            x: radius * Math.cos(angle),
+            y: height,
+            z: radius * Math.sin(angle),
+            r: 1.0, g: 0.8 + t * 0.2, b: 0.6 + t * 0.2
+        };
+    }
 
-    const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-    hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+    function getPointOnBalancedYin(i) {
+        const angle = (i / PARTICLE_COUNT) * Math.PI * 2;
+        const r = 8;
+        const side = Math.sin(angle) > 0 ? 1 : -1;
+        const offset = side * Math.cos(angle * 2) * 3;
+        return {
+            x: r * Math.cos(angle) + offset,
+            y: r * Math.sin(angle),
+            z: (Math.random() - 0.5) * 2,
+            r: side > 0 ? 1.0 : 0.7,
+            g: side > 0 ? 0.9 : 0.6,
+            b: side > 0 ? 0.8 : 0.5
+        };
+    }
+
+    function getPointOnListeningEye(i) {
+        const isIris = i < PARTICLE_COUNT * 0.3;
+        if (isIris) {
+            const angle = (i / (PARTICLE_COUNT * 0.3)) * Math.PI * 2;
+            const radius = Math.random() * 3;
+            return {
+                x: radius * Math.cos(angle),
+                y: radius * Math.sin(angle),
+                z: 0,
+                r: 0.3, g: 0.2, b: 0.4
+            };
+        } else {
+            const angle = ((i - PARTICLE_COUNT * 0.3) / (PARTICLE_COUNT * 0.7)) * Math.PI * 2;
+            const radius = 6 + Math.random() * 2;
+            return {
+                x: radius * Math.cos(angle) * 1.5,
+                y: radius * Math.sin(angle),
+                z: (Math.random() - 0.5) * 3,
+                r: 1.0, g: 0.85, b: 0.7
+            };
+        }
+    }
+
+    function getPointOnScatteredBeauty(i) {
+        const clusterCount = 50;
+        const cluster = Math.floor(Math.random() * clusterCount);
+        const angle = (cluster / clusterCount) * Math.PI * 2;
+        const radius = 8 + Math.random() * 8;
+        const height = (Math.random() - 0.5) * 15;
+        return {
+            x: radius * Math.cos(angle) + (Math.random() - 0.5) * 2,
+            y: height,
+            z: radius * Math.sin(angle) + (Math.random() - 0.5) * 2,
+            r: 0.9 + Math.random() * 0.1,
+            g: 0.7 + Math.random() * 0.2,
+            b: 0.6 + Math.random() * 0.2
+        };
+    }
+
+    function getPointOnSunset(i) {
+        const x = ((i % 150) - 75) * 0.3;
+        const z = -15 + (Math.floor(i / 150)) * 0.1;
+        const horizonDist = Math.abs(x) / 15;
+        const y = -5 + Math.exp(-horizonDist) * 8;
+        return {
+            x: x,
+            y: y,
+            z: z,
+            r: 1.0,
+            g: 0.6 + (1 - horizonDist) * 0.3,
+            b: 0.4 + (1 - horizonDist) * 0.2
+        };
+    }
+
+    function getPointOnHeart(i) {
+        const t = (i / PARTICLE_COUNT) * Math.PI * 2;
+        const x = 16 * Math.pow(Math.sin(t), 3);
+        const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+        const z = (Math.random() - 0.5) * 4;
+        const scale = 0.5;
+        return {
+            x: x * scale,
+            y: y * scale,
+            z: z,
+            r: 1.0, g: 0.7, b: 0.5
+        };
+    }
+
+    function getPointOnGrowthSpiral(i) {
+        const t = (i / PARTICLE_COUNT) * Math.PI * 8;
+        const radius = t * 0.8;
+        const height = t * 1.5;
+        return {
+            x: radius * Math.cos(t),
+            y: height - 12,
+            z: radius * Math.sin(t),
+            r: 0.7 + (i / PARTICLE_COUNT) * 0.3,
+            g: 0.6 + (i / PARTICLE_COUNT) * 0.3,
+            b: 0.5 + (i / PARTICLE_COUNT) * 0.3
+        };
+    }
+
+    function getPointOnExpandingAwe(i) {
+        const layer = Math.floor(i / (PARTICLE_COUNT / 5));
+        const angle = (i / (PARTICLE_COUNT / 5)) * Math.PI * 2 * 3;
+        const radius = 4 + layer * 2.5;
+        return {
+            x: radius * Math.cos(angle),
+            y: radius * Math.sin(angle),
+            z: (Math.random() - 0.5) * (layer + 1),
+            r: 1.0 - layer * 0.1,
+            g: 0.85 - layer * 0.1,
+            b: 0.7 - layer * 0.1
+        };
+    }
+
+    function getPointOnCrown(i) {
+        const isBase = i < PARTICLE_COUNT * 0.4;
+        if (isBase) {
+            const angle = (i / (PARTICLE_COUNT * 0.4)) * Math.PI * 2;
+            const radius = 6;
+            return {
+                x: radius * Math.cos(angle),
+                y: 0,
+                z: radius * Math.sin(angle),
+                r: 1.0, g: 0.85, b: 0.6
+            };
+        } else {
+            const idx = i - PARTICLE_COUNT * 0.4;
+            const peakCount = 8;
+            const peak = Math.floor(idx / (PARTICLE_COUNT * 0.6 / peakCount));
+            const t = (idx % (PARTICLE_COUNT * 0.6 / peakCount)) / (PARTICLE_COUNT * 0.6 / peakCount);
+            const angle = (peak / peakCount) * Math.PI * 2;
+            const radius = 6 * (1 - t);
+            const height = t * 10;
+            return {
+                x: radius * Math.cos(angle),
+                y: height,
+                z: radius * Math.sin(angle),
+                r: 1.0, g: 0.9, b: 0.7
+            };
+        }
+    }
+
+    function getPointOnTruthSphere(i) {
+        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
+        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
+        const r = 10;
+        return {
+            x: r * Math.cos(theta) * Math.sin(phi),
+            y: r * Math.sin(theta) * Math.sin(phi),
+            z: r * Math.cos(phi),
+            r: 1.0, g: 0.9, b: 0.8
+        };
+    }
+
+    function getPointOnSkyLayers(i) {
+        const layer = Math.floor(i / (PARTICLE_COUNT / 7));
+        const x = ((i % 200) - 100) * 0.3;
+        const z = (Math.floor((i % (PARTICLE_COUNT / 7)) / 200) - 37) * 0.3;
+        const y = layer * 3 - 10;
+        const colors = [
+            [0.3, 0.2, 0.5],  // Deep purple
+            [0.5, 0.3, 0.6],  // Purple
+            [0.7, 0.5, 0.7],  // Light purple
+            [0.9, 0.7, 0.7],  // Pink
+            [1.0, 0.8, 0.6],  // Orange
+            [1.0, 0.9, 0.7],  // Yellow
+            [0.9, 0.95, 1.0]  // Light blue
+        ];
+        const color = colors[layer] || [1, 1, 1];
+        return {
+            x: x, y: y, z: z,
+            r: color[0], g: color[1], b: color[2]
+        };
+    }
+
+    function getPointOnTimeline(i) {
+        const section = Math.floor(i / (PARTICLE_COUNT / 3));
+        const t = (i % (PARTICLE_COUNT / 3)) / (PARTICLE_COUNT / 3);
+        const x = -15 + section * 15;
+        const y = Math.sin(t * Math.PI * 2 * 5) * 3;
+        const z = (Math.random() - 0.5) * 4;
+        const colors = [
+            [0.7, 0.6, 0.5],  // Past (sepia)
+            [1.0, 0.85, 0.7], // Present (bright)
+            [0.9, 0.9, 1.0]   // Future (ethereal)
+        ];
+        const color = colors[section] || [1, 1, 1];
+        return {
+            x: x + (Math.random() - 0.5) * 2,
+            y: y,
+            z: z,
+            r: color[0], g: color[1], b: color[2]
+        };
+    }
+
+    function getPointOnFootsteps(i) {
+        const stepCount = 12;
+        const step = Math.floor(i / (PARTICLE_COUNT / stepCount));
+        const t = (i % (PARTICLE_COUNT / stepCount)) / (PARTICLE_COUNT / stepCount);
+        
+        const stepX = step * 3 - 18;
+        const stepY = -8;
+        const stepZ = (step % 2) * 2 - 1;
+        
+        const angle = t * Math.PI * 2;
+        const radius = 1.5;
+        
+        return {
+            x: stepX + radius * Math.cos(angle),
+            y: stepY,
+            z: stepZ * 2 + radius * Math.sin(angle),
+            r: 0.8 + step / stepCount * 0.2,
+            g: 0.7 + step / stepCount * 0.2,
+            b: 0.6 + step / stepCount * 0.3
+        };
+    }
+
+    function getPointOnUniverse(i) {
+        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
+        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
+        const r = 5 + Math.random() * 10;
+        return {
+            x: r * Math.cos(theta) * Math.sin(phi),
+            y: r * Math.sin(theta) * Math.sin(phi),
+            z: r * Math.cos(phi),
+            r: 0.7 + Math.random() * 0.3,
+            g: 0.6 + Math.random() * 0.3,
+            b: 0.5 + Math.random() * 0.4
+        };
+    }
+
+    function setTargetShape(shapeName) {
+        const colorAttr = particles.geometry.attributes.color;
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            let p;
+            switch(shapeName) {
+                case 'orbit': p = getPointOnOrbit(i); break;
+                case 'constellation': p = getPointOnConstellation(i); break;
+                case 'gentle_waves': p = getPointOnGentleWaves(i); break;
+                case 'anchor': p = getPointOnAnchor(i); break;
+                case 'hourglass': p = getPointOnHourglass(i); break;
+                case 'balanced_yin': p = getPointOnBalancedYin(i); break;
+                case 'listening_eye': p = getPointOnListeningEye(i); break;
+                case 'scattered_beauty': p = getPointOnScatteredBeauty(i); break;
+                case 'sunset': p = getPointOnSunset(i); break;
+                case 'heart': p = getPointOnHeart(i); break;
+                case 'growth_spiral': p = getPointOnGrowthSpiral(i); break;
+                case 'expanding_awe': p = getPointOnExpandingAwe(i); break;
+                case 'crown': p = getPointOnCrown(i); break;
+                case 'truth_sphere': p = getPointOnTruthSphere(i); break;
+                case 'sky_layers': p = getPointOnSkyLayers(i); break;
+                case 'timeline': p = getPointOnTimeline(i); break;
+                case 'footsteps': p = getPointOnFootsteps(i); break;
+                case 'universe': p = getPointOnUniverse(i); break;
+                default: p = getPointOnOrbit(i);
+            }
+
+            targetPositions[i * 3] = p.x;
+            targetPositions[i * 3 + 1] = p.y;
+            targetPositions[i * 3 + 2] = p.z;
+            colorAttr.setXYZ(i, p.r, p.g, p.b);
+        }
+        colorAttr.needsUpdate = true;
+    }
+
+    // State
+    let currentStanza = 0;
+    let handX = 0, handY = 0, handZ = 0;
+    let isPinching = false, isFist = false;
+    let lastSwipeTime = 0;
+    let lastHandX = 0;
+    let isPaused = false;
+    let isReady = false;
+
+    // UI Elements
+    const poemContainer = document.getElementById('poem-container');
+    const shapeInfo = document.getElementById('shape-info');
+    const shapeTitle = document.getElementById('shape-title');
+    const shapeMeaning = document.getElementById('shape-meaning');
+    const progress = document.getElementById('progress');
+    const controlsHint = document.getElementById('controls-hint');
+    const loading = document.getElementById('loading');
+    const titleScreen = document.getElementById('title-screen');
+    const startButton = document.getElementById('start-button');
+
+    function displayStanza(index) {
+        if (index < 0 || index >= poemData.length) return;
+        
+        currentStanza = index;
+        const data = poemData[index];
+        
+        // Update poem
+        poemContainer.classList.remove('visible');
+        setTimeout(() => {
+            poemContainer.innerHTML = '';
+            data.lines.forEach((line, i) => {
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'stanza-line';
+                lineDiv.textContent = line;
+                lineDiv.style.animationDelay = `${i * 0.15}s`;
+                poemContainer.appendChild(lineDiv);
+            });
+            poemContainer.classList.add('visible');
+        }, 300);
+        
+        // Update shape
+        setTargetShape(data.shape);
+        
+        // Update info
+        shapeTitle.textContent = data.title;
+        shapeMeaning.textContent = data.meaning;
+        shapeInfo.classList.add('visible');
+        
+        // Update progress
+        progress.textContent = `${index + 1} / ${poemData.length}`;
+    }
+
+    // Hand tracking
+    const videoElement = document.getElementsByClassName('input_video')[0];
+    
+    function onResults(results) {
+        if (!isReady) return;
+        
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+            const landmarks = results.multiHandLandmarks[0];
+            
+            // Get hand position
+            const newHandX = (0.5 - landmarks[9].x) * 2;
+            handY = (0.5 - landmarks[9].y) * 2;
+            handZ = landmarks[9].z;
+            
+            // Detect swipe
+            const swipeDelta = newHandX - lastHandX;
+            if (Math.abs(swipeDelta) > 0.15 && Date.now() - lastSwipeTime > 800) {
+                if (swipeDelta > 0 && currentStanza > 0) {
+                    displayStanza(currentStanza - 1);
+                    lastSwipeTime = Date.now();
+                } else if (swipeDelta < 0 && currentStanza < poemData.length - 1) {
+                    displayStanza(currentStanza + 1);
+                    lastSwipeTime = Date.now();
+                }
+            }
+            lastHandX = newHandX;
+            handX = newHandX;
+            
+            // Detect pinch
+            const dist = Math.hypot(
+                landmarks[8].x - landmarks[4].x,
+                landmarks[8].y - landmarks[4].y,
+                landmarks[8].z - landmarks[4].z
+            );
+            isPinching = dist < 0.05;
+            
+            // Detect fist
+            const palmDist = Math.hypot(
+                landmarks[8].x - landmarks[0].x,
+                landmarks[8].y - landmarks[0].y
+            );
+            isFist = palmDist < 0.25;
+        }
+    }
+
+    const hands = new Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+    hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+    });
     hands.onResults(onResults);
 
-    const camera = new Camera(videoElement, {
-        onFrame: async () => { await hands.send({image: videoElement}); },
-        width: 1280, height: 720
+    const cameraUtils = new Camera(videoElement, {
+        onFrame: async () => {
+            if (isReady) {
+                await hands.send({ image: videoElement });
+            }
+        },
+        width: 320,
+        height: 240
     });
-    
-    initParticles();
-    animate();
-    camera.start();
 
+    // Start button
+    startButton.addEventListener('click', () => {
+        titleScreen.classList.add('hidden');
+        setTimeout(() => {
+            titleScreen.style.display = 'none';
+            loading.style.opacity = '0';
+            setTimeout(() => {
+                loading.style.display = 'none';
+                isReady = true;
+                displayStanza(0);
+                controlsHint.classList.add('visible');
+                cameraUtils.start();
+            }, 500);
+        }, 1000);
+    });
+
+    // Animation loop
+    const clock = new THREE.Clock();
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        if (!isReady) {
+            renderer.render(scene, camera);
+            return;
+        }
+        
+        const time = clock.getElapsedTime();
+        const posAttr = particles.geometry.attributes.position;
+        const curPos = posAttr.array;
+
+        // Smooth rotation based on hand
+        particles.rotation.x += ((handY * 0.5) - particles.rotation.x) * 0.08;
+        particles.rotation.y += ((handX * 0.5) - particles.rotation.y) * 0.08;
+        particles.rotation.z += 0.0005;
+
+        // Expansion based on hand height and fist
+        let exp = 1.0;
+        if (isFist) {
+            exp = 0.3;
+        } else if (isPinching) {
+            exp = 1.5;
+        } else {
+            exp = 1.0 + (1 - Math.abs(handY)) * 0.3;
+        }
+
+        // Update particles
+        const speed = isPinching ? 0.02 : (isFist ? 0.15 : 0.04);
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            const idx = i * 3;
+            const tx = targetPositions[idx] * exp;
+            const ty = targetPositions[idx + 1] * exp;
+            const tz = targetPositions[idx + 2] * exp;
+            const noise = Math.sin(time * 0.5 + i * 0.01) * 0.03;
+
+            curPos[idx] += (tx - curPos[idx]) * speed + noise;
+            curPos[idx + 1] += (ty - curPos[idx + 1]) * speed + noise;
+            curPos[idx + 2] += (tz - curPos[idx + 2]) * speed + noise;
+        }
+        posAttr.needsUpdate = true;
+
+        // Rotate stars slowly
+        stars.rotation.y += 0.0001;
+
+        renderer.render(scene, camera);
+    }
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Initialize first shape
+    setTargetShape('orbit');
+    animate();
 </script>
 </body>
 </html>
