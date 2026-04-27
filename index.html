@@ -3,145 +3,441 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Day That Is Hers | Happy Birthday</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <title>A Day That Is Hers</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <style>
+        :root {
+            --glass-bg: rgba(15, 20, 35, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f0f0ff;
+            --text-accent: #b095d1; /* Soft sunset purple */
+        }
+
+        body { 
+            margin: 0; 
+            background: #05050a; 
+            font-family: 'Georgia', serif; 
+            overflow: hidden; 
+            color: var(--text-primary); 
+        }
+
+        #video-container { 
+            position: relative; 
+            width: 100vw; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        /* The camera feed needs to be flipped horizontally so it acts like a mirror */
+        video, canvas { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            transform: scaleX(-1); 
+        }
+
+        #effects_canvas { 
+            z-index: 5; 
+            pointer-events: none; 
+        }
+
+        /* Overlay that darkens the video once the poem is revealed */
+        #backdrop-dimmer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 15, 30, 0.0);
+            z-index: 4;
+            transition: background 2s ease;
+            pointer-events: none;
+        }
+
+        #backdrop-dimmer.active {
+            background: rgba(10, 15, 30, 0.85); /* Deepens to match the 'style' */
+        }
+
+        #ui-layer { 
+            position: absolute; 
+            z-index: 10; 
+            width: 100%; 
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none; 
+        }
+
+        .instruction { 
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 1.2rem; 
+            letter-spacing: 2px; 
+            text-transform: uppercase; 
+            background: rgba(0,0,0,0.5);
+            padding: 15px 30px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            transition: opacity 1s ease;
+        }
+
+        .heart-hint { 
+            margin-top: 20px; 
+            font-size: 0.9rem; 
+            color: var(--text-accent); 
+            opacity: 0;
+            transition: opacity 2s ease;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        #poem-card { 
+            background: var(--glass-bg); 
+            padding: 3rem 4rem; 
+            border-radius: 20px; 
+            border: 1px solid var(--glass-border); 
+            backdrop-filter: blur(15px); 
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5); 
+            max-width: 600px;
+            max-height: 70vh;
+            overflow-y: auto;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 2s ease;
+            pointer-events: auto; /* Allow scrolling inside the card */
+            /* Hide scrollbar for a cleaner look */
+            -ms-overflow-style: none;  
+            scrollbar-width: none;  
+        }
+
+        #poem-card::-webkit-scrollbar { 
+            display: none; 
+        }
+
+        #poem-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stanza {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .purple-heart {
+            color: var(--text-accent);
+            font-size: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Simple loading state */
+        #loading {
+            position: absolute;
+            z-index: 20;
+            font-family: 'Segoe UI', sans-serif;
+            letter-spacing: 2px;
+        }
+    </style>
 </head>
 <body>
 
-    <canvas id="particleCanvas"></canvas>
+<div id="video-container">
+    <video id="input_video" autoplay playsinline></video>
+    <canvas id="output_canvas"></canvas>
+    <div id="backdrop-dimmer"></div>
+    <canvas id="effects_canvas"></canvas>
     
-    <main id="scene-wrapper">
-        <div id="camera-aim">
-            <div id="content-3d">
+    <div id="loading">WAKING UP THE CAMERA...</div>
 
-                <section class="stanzade depth-2">
-                    <p>Some people arrive into a day</p>
-                    <p>and nothing really changes shape,</p>
-                    <p>The hours pass the way they do,</p>
-                    <p>the sky remains the same escape.</p>
-                </section>
-
-                <section class="stanza depth-4">
-                    <p>But then there are days like this—</p>
-                    <p>the kind that feel a little more aware,</p>
-                    <p>As if the world remembers softly</p>
-                    <p>that someone like her is here.</p>
-                </section>
-
-                <section class="stanza depth-1">
-                    <p>Not in a way that asks for noise,</p>
-                    <p>or celebration loud and bright,</p>
-                    <p>But in the way small things align</p>
-                    <p>a little better in her light.</p>
-                </section>
-
-                <section class="stanza depth-3">
-                    <p>She doesn’t try to be remarkable,</p>
-                    <p>doesn’t gather attention or claim,</p>
-                    <p>Yet somehow everything around her</p>
-                    <p>feels steadier just the same.</p>
-                </section>
-
-                <section class="stanza depth-5">
-                    <p>The way she carries every moment,</p>
-                    <p>as if time trusts her with its weight,</p>
-                    <p>Not rushing through, not falling behind,</p>
-                    <p>just meeting each piece at its state.</p>
-                </section>
-
-                <section class="stanza depth-1">
-                    <p>There’s something rare in how she moves,</p>
-                    <p>like calm stitched carefully with grace,</p>
-                    <p>Like even the busiest days she holds</p>
-                    <p>can’t quite disturb her inner pace.</p>
-                </section>
-
-                <section class="stanza depth-4">
-                    <p>And still, within all of that strength,</p>
-                    <p>there’s softness she never misplaces—</p>
-                    <p>In the way she listens, understands,</p>
-                    <p>in the way she reads unspoken spaces.</p>
-                </section>
-
-                <section class="stanza depth-2">
-                    <p>She notices things most overlook,</p>
-                    <p>the little shifts, the hidden hue,</p>
-                    <p>The quiet beauty in passing skies,</p>
-                    <p>the kind of things that stay with you.</p>
-                </section>
-
-                <section class="stanza depth-6">
-                    <p>Maybe that’s why the world feels different</p>
-                    <p>when she looks at it for a while—</p>
-                    <p>Because even a sunset seems to learn</p>
-                    <p>how to deepen just to match her style.</p>
-                </section>
-
-                <section class="stanza depth-3">
-                    <p>And somewhere in all of this,</p>
-                    <p>someone stands a little to the side,</p>
-                    <p>Not trying to hold or change her course,</p>
-                    <p>just watching with a kind of quiet pride.</p>
-                </section>
-
-                <section class="stanza depth-5">
-                    <p>Seeing how she’s become all this</p>
-                    <p>without needing help or a name,</p>
-                    <p>Building herself piece by piece</p>
-                    <p>into something steady and untamed.</p>
-                </section>
-
-                <section class="stanza depth-1">
-                    <p>There’s admiration that doesn’t speak much,</p>
-                    <p>that doesn’t need to be explained,</p>
-                    <p>Just a quiet kind of awe that grows</p>
-                    <p>every time her presence remains.</p>
-                </section>
-
-                <section class="stanza depth-4">
-                    <p>And maybe that’s what makes today</p>
-                    <p>feel different in its own calm way—</p>
-                    <p>Not because the world has changed,</p>
-                    <p>but because it’s her day.</p>
-                </section>
-
-                <section class="stanza depth-2">
-                    <p>A day that doesn’t need grand words,</p>
-                    <p>or promises stretched too far ahead,</p>
-                    <p>Just the simple truth that who she is</p>
-                    <p>has already shaped so much instead.</p>
-                </section>
-
-                <section class="stanza depth-6">
-                    <p>So here’s to the way she keeps growing—</p>
-                    <p>not louder, not faster, just true,</p>
-                    <p>Like a sky that keeps finding new colors</p>
-                    <p>and never forgets its blue.</p>
-                </section>
-
-                <section class="stanza depth-3">
-                    <p>Here’s to everything she’s carried,</p>
-                    <p>everything she’s yet to be,</p>
-                    <p>To the quiet strength, the gentle care,</p>
-                    <p>to the person she’s already become so naturally.</p>
-                </section>
-
-                <section class="final-panel depth-7">
-                    <div class="message">
-                        <p>Because some people don’t just pass through life—</p>
-                        <p>they change how it’s seen, how it’s felt, how it stays…</p>
-                        <br>
-                        <h1 class="birthday-wish">…and today just happens to be yours. 💜</h1>
-                        <p class="subtitle">Happy Birthday, from the one who watches with pride.</p>
-                    </div>
-                </section>
-
+    <div id="ui-layer">
+        <div id="hug-prompt" class="instruction">Bring both hands together to begin...</div>
+        
+        <div id="poem-card">
+            <div class="stanza">
+                Some people arrive into a day<br>
+                and nothing really changes shape,<br>
+                The hours pass the way they do,<br>
+                the sky remains the same escape.
+            </div>
+            <div class="stanza">
+                But then there are days like this—<br>
+                the kind that feel a little more aware,<br>
+                As if the world remembers softly<br>
+                that someone like her is here.
+            </div>
+            <div class="stanza">
+                Not in a way that asks for noise,<br>
+                or celebration loud and bright,<br>
+                But in the way small things align<br>
+                a little better in her light.
+            </div>
+            <div class="stanza">
+                She doesn’t try to be remarkable,<br>
+                doesn’t gather attention or claim,<br>
+                Yet somehow everything around her<br>
+                feels steadier just the same.
+            </div>
+            <div class="stanza">
+                The way she carries every moment,<br>
+                as if time trusts her with its weight,<br>
+                Not rushing through, not falling behind,<br>
+                just meeting each piece at its state.
+            </div>
+            <div class="stanza">
+                There’s something rare in how she moves,<br>
+                like calm stitched carefully with grace,<br>
+                Like even the busiest days she holds<br>
+                can’t quite disturb her inner pace.
+            </div>
+            <div class="stanza">
+                And still, within all of that strength,<br>
+                there’s softness she never misplaces—<br>
+                In the way she listens, understands,<br>
+                in the way she reads unspoken spaces.
+            </div>
+            <div class="stanza">
+                She notices things most overlook,<br>
+                the little shifts, the hidden hue,<br>
+                The quiet beauty in passing skies,<br>
+                the kind of things that stay with you.
+            </div>
+            <div class="stanza">
+                Maybe that’s why the world feels different<br>
+                when she looks at it for a while—<br>
+                Because even a sunset seems to learn<br>
+                how to deepen just to match her style.
+            </div>
+            <div class="stanza">
+                And somewhere in all of this,<br>
+                someone stands a little to the side,<br>
+                Not trying to hold or change her course,<br>
+                just watching with a kind of quiet pride.
+            </div>
+            <div class="stanza">
+                Seeing how she’s become all this<br>
+                without needing help or a name,<br>
+                Building herself piece by piece<br>
+                into something steady and untamed.
+            </div>
+            <div class="stanza">
+                There’s admiration that doesn’t speak much,<br>
+                that doesn’t need to be explained,<br>
+                Just a quiet kind of awe that grows<br>
+                every time her presence remains.
+            </div>
+            <div class="stanza">
+                And maybe that’s what makes today<br>
+                feel different in its own calm way—<br>
+                Not because the world has changed,<br>
+                but because it’s her day.
+            </div>
+            <div class="stanza">
+                A day that doesn’t need grand words,<br>
+                or promises stretched too far ahead,<br>
+                Just the simple truth that who she is<br>
+                has already shaped so much instead.
+            </div>
+            <div class="stanza">
+                So here’s to the way she keeps growing—<br>
+                not louder, not faster, just true,<br>
+                Like a sky that keeps finding new colors<br>
+                and never forgets its blue.
+            </div>
+            <div class="stanza">
+                Here’s to everything she’s carried,<br>
+                everything she’s yet to be,<br>
+                To the quiet strength, the gentle care,<br>
+                to the person she’s already become so naturally.
+            </div>
+            <div class="stanza">
+                And if days keep moving forward like this,<br>
+                with all that she holds and creates,<br>
+                Then the world’s only getting better<br>
+                with every step she takes.
+            </div>
+            <div class="stanza">
+                Because some people don’t just pass through life—<br>
+                they change how it’s seen, how it’s felt, how it stays…<br><br>
+                …and today just happens to be hers.
+                <div class="purple-heart">💜</div>
             </div>
         </div>
-    </main>
+        
+        <div id="heart-hint" class="heart-hint">Try making a heart with your hands 🫶</div>
+    </div>
+</div>
 
-    <script src="script.js"></script>
+<script>
+    // --- DOM Elements ---
+    const videoElement = document.getElementById('input_video');
+    const canvasElement = document.getElementById('output_canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    const effectsCanvas = document.getElementById('effects_canvas');
+    const effectsCtx = effectsCanvas.getContext('2d');
+    
+    const poemCard = document.getElementById('poem-card');
+    const promptText = document.getElementById('hug-prompt');
+    const heartHint = document.getElementById('heart-hint');
+    const dimmer = document.getElementById('backdrop-dimmer');
+    const loadingText = document.getElementById('loading');
+
+    // --- State Variables ---
+    let isRevealed = false;
+    let isHeartDetected = false;
+    let sunsetParticles = [];
+
+    // --- Particle System (The "New Colors" Sky Effect) ---
+    class SunsetParticle {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.vx = (Math.random() - 0.5) * 4;
+            this.vy = (Math.random() - 1) * 3 - 2; // Float upwards
+            this.size = Math.random() * 8 + 3;
+            // Generate soft sunset hues: warm pinks, soft purples, golds
+            const hues = [330, 270, 45, 15]; 
+            const hue = hues[Math.floor(Math.random() * hues.length)];
+            this.color = `hsla(${hue}, 80%, 70%, 0.8)`;
+            this.life = 1.0;
+            this.decay = Math.random() * 0.02 + 0.01;
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.life -= this.decay;
+        }
+
+        draw(ctx) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = Math.max(0, this.life);
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = this.color;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    function animateEffects() {
+        // Resize canvas to match window
+        effectsCanvas.width = window.innerWidth;
+        effectsCanvas.height = window.innerHeight;
+        effectsCtx.clearRect(0, 0, effectsCanvas.width, effectsCanvas.height);
+
+        // Update and draw particles
+        for (let i = sunsetParticles.length - 1; i >= 0; i--) {
+            let p = sunsetParticles[i];
+            p.update();
+            p.draw(effectsCtx);
+            if (p.life <= 0) {
+                sunsetParticles.splice(i, 1);
+            }
+        }
+        requestAnimationFrame(animateEffects);
+    }
+    animateEffects();
+
+    // --- Math Helpers ---
+    function getDistance(p1, p2) {
+        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+    }
+
+    // --- MediaPipe Processing ---
+    function onResults(results) {
+        // Hide loading text once frames are processing
+        if(loadingText.style.display !== 'none') loadingText.style.display = 'none';
+
+        // Match canvas dimensions to the video intrinsic dimensions
+        if (canvasElement.width !== videoElement.videoWidth) {
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+        }
+
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length >= 2) {
+            const hand1 = results.multiHandLandmarks[0];
+            const hand2 = results.multiHandLandmarks[1];
+
+            // 1. Check for Hug (Wrists close together)
+            const hugDist = getDistance(hand1[0], hand2[0]);
+            if (hugDist < 0.3 && !isRevealed) {
+                isRevealed = true;
+                promptText.style.opacity = '0';
+                setTimeout(() => { promptText.style.display = 'none'; }, 1000);
+                
+                dimmer.classList.add('active');
+                poemCard.classList.add('visible');
+                
+                // Show heart hint a few seconds after reveal
+                setTimeout(() => {
+                    heartHint.style.opacity = '1';
+                }, 5000);
+            }
+
+            // 2. Check for Heart (Index tips and Thumb tips close together)
+            const indexDist = getDistance(hand1[8], hand2[8]);
+            const thumbDist = getDistance(hand1[4], hand2[4]);
+
+            isHeartDetected = (indexDist < 0.08 && thumbDist < 0.08);
+
+            // Draw the hand landmarks (soft white/purple lines)
+            for (const landmarks of results.multiHandLandmarks) {
+                drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, 
+                    {color: isHeartDetected ? '#b095d1' : 'rgba(255, 255, 255, 0.4)', lineWidth: 2});
+                drawLandmarks(canvasCtx, landmarks, 
+                    {color: 'rgba(255, 255, 255, 0.8)', lineWidth: 1, radius: 2});
+            }
+
+            // 3. Trigger Particle Magic from the center of the hands
+            if (isHeartDetected) {
+                // Calculate rough center point between the two hands for particle origin
+                // Note: Coordinates are normalized (0-1), need to map to window dimensions
+                // Because canvas is mirrored (scaleX(-1)), we invert the X coordinate for the visual effects layer
+                const centerX = (1 - ((hand1[8].x + hand2[8].x) / 2)) * window.innerWidth;
+                const centerY = ((hand1[8].y + hand2[8].y) / 2) * window.innerHeight;
+
+                // Spawn a few particles per frame while heart is held
+                for(let i = 0; i < 3; i++) {
+                    sunsetParticles.push(new SunsetParticle(centerX, centerY));
+                }
+            }
+        }
+        canvasCtx.restore();
+    }
+
+    // --- Initialize MediaPipe ---
+    const hands = new Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+    hands.setOptions({ 
+        maxNumHands: 2, 
+        modelComplexity: 1, 
+        minDetectionConfidence: 0.5, 
+        minTrackingConfidence: 0.5 
+    });
+    hands.onResults(onResults);
+
+    // --- Initialize Camera ---
+    const camera = new Camera(videoElement, {
+        onFrame: async () => {
+            await hands.send({image: videoElement});
+        },
+        width: 1280, 
+        height: 720
+    });
+    camera.start().catch(err => {
+        console.error("Camera access denied or unavailable", err);
+        loadingText.innerText = "Please allow camera access to view this experience.";
+    });
+</script>
 </body>
 </html>
