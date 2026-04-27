@@ -62,32 +62,31 @@
             z-index: 10;
             pointer-events: none;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            padding: 60px 40px;
+            padding: 60px;
         }
         
         #poem-container {
-            max-width: 900px;
-            text-align: center;
+            max-width: 480px;
+            text-align: left;
             opacity: 1;
             transform: translateY(0);
             transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-right: auto;
         }
         
         .stanza {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.5rem;
-            line-height: 2.4;
+            font-size: 1.3rem;
+            line-height: 2.2;
             font-weight: 400;
             color: #ffdfcc;
             text-shadow: 
-                0 0 30px rgba(255, 184, 140, 0.6),
-                0 0 60px rgba(255, 140, 100, 0.3),
-                0 2px 4px rgba(0, 0, 0, 0.8);
-            margin-bottom: 2rem;
-            letter-spacing: 0.8px;
+                0 0 25px rgba(255, 184, 140, 0.5),
+                0 2px 4px rgba(0, 0, 0, 0.9);
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.6px;
         }
         
         .stanza-line {
@@ -136,8 +135,9 @@
         
         #shape-info {
             position: fixed;
-            top: 30px;
-            left: 30px;
+            top: 50%;
+            right: 60px;
+            transform: translateY(-50%);
             max-width: 420px;
             background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(15px);
@@ -146,13 +146,12 @@
             border: 1px solid rgba(255, 184, 140, 0.3);
             z-index: 100;
             opacity: 1;
-            transform: translateY(0);
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         #shape-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.8rem;
+            font-size: 1.9rem;
             font-weight: 600;
             color: #ffdfcc;
             margin-bottom: 14px;
@@ -164,6 +163,15 @@
             line-height: 1.8;
             color: #d4c5b9;
             font-weight: 300;
+        }
+        
+        #gemstone-properties {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 184, 140, 0.2);
+            font-size: 0.9rem;
+            color: #c4b5a9;
+            font-style: italic;
         }
         
         #progress {
@@ -182,24 +190,59 @@
         
         
         @media (max-width: 768px) {
+            #ui-overlay {
+                flex-direction: column;
+                justify-content: flex-start;
+                padding: 80px 20px 20px 20px;
+            }
+            
+            #poem-container {
+                max-width: 100%;
+                text-align: center;
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
             .stanza {
-                font-size: 1.2rem;
-                line-height: 2.1;
+                font-size: 1.1rem;
+                line-height: 2.0;
             }
             
             #shape-info {
-                top: 15px;
-                left: 15px;
-                right: 15px;
+                position: fixed;
+                top: auto;
+                bottom: 180px;
+                left: 20px;
+                right: 20px;
+                transform: none;
                 max-width: none;
                 padding: 20px;
+            }
+            
+            #shape-title {
+                font-size: 1.5rem;
+            }
+            
+            #shape-meaning, #gemstone-properties {
+                font-size: 0.9rem;
             }
             
             #controls-hint {
                 bottom: 160px;
                 right: 10px;
-                left: 10px;
-                max-width: none;
+                left: auto;
+                max-width: 200px;
+                font-size: 0.8rem;
+                padding: 15px;
+            }
+            
+            .control-item {
+                margin: 6px 0;
+            }
+            
+            .control-icon {
+                font-size: 1.2rem;
+                min-width: 28px;
             }
             
             #video-container {
@@ -233,6 +276,7 @@
     <div id="shape-info">
         <div id="shape-title"></div>
         <div id="shape-meaning"></div>
+        <div id="gemstone-properties"></div>
     </div>
     
     <div id="progress"></div>
@@ -261,7 +305,7 @@
     </div>
 
 <script>
-    // Poem data with stanzas and their symbolic meanings
+    // Poem data with gemstones and their metaphysical meanings
     const poemData = [
         {
             lines: [
@@ -270,9 +314,10 @@
                 "The hours pass the way they do,",
                 "the sky remains the same escape."
             ],
-            shape: "orbit",
-            title: "The Orbit of Days",
-            meaning: "Gentle spirals representing the circular nature of ordinary days—each one revolving peacefully, waiting for someone extraordinary to give them meaning."
+            shape: "moonstone",
+            title: "Moonstone",
+            meaning: "These opening lines speak to the cycles of ordinary days—time moving in gentle rhythms, waiting for something extraordinary.",
+            properties: "Moonstone: Stone of new beginnings and cycles. Enhances intuition and promotes harmony with natural rhythms."
         },
         {
             lines: [
@@ -281,9 +326,10 @@
                 "As if the world remembers softly",
                 "that someone like her is here."
             ],
-            shape: "constellation",
-            title: "Awakened Stars",
-            meaning: "A constellation forms—scattered stars suddenly connecting into something meaningful, symbolizing how her presence brings awareness and connection to everything around her."
+            shape: "star_sapphire",
+            title: "Star Sapphire",
+            meaning: "Like a constellation awakening, the world becomes aware of her presence—everything connects into something meaningful.",
+            properties: "Star Sapphire: Stone of wisdom and spiritual awakening. Brings clarity, insight, and heightened awareness."
         },
         {
             lines: [
@@ -292,9 +338,10 @@
                 "But in the way small things align",
                 "a little better in her light."
             ],
-            shape: "gentle_waves",
-            title: "Soft Alignment",
-            meaning: "Gentle waves rippling outward—representing the quiet, graceful way she influences her surroundings without demanding attention, like calm water finding its level."
+            shape: "aquamarine",
+            title: "Aquamarine",
+            meaning: "Her influence is like calm water—quiet, graceful, helping everything flow into place without force.",
+            properties: "Aquamarine: Stone of calm and clarity. Brings soothing energy, reduces stress, promotes gentle strength."
         },
         {
             lines: [
@@ -303,9 +350,10 @@
                 "Yet somehow everything around her",
                 "feels steadier just the same."
             ],
-            shape: "anchor",
-            title: "The Quiet Anchor",
-            meaning: "A stable, grounded form—an anchor of calm in the chaos. She doesn't seek the spotlight, but provides stability and steadiness to those around her."
+            shape: "onyx",
+            title: "Black Onyx",
+            meaning: "Like an anchor in chaos, she provides stability without seeking recognition—grounded, steady, essential.",
+            properties: "Black Onyx: Stone of strength and grounding. Provides stability, protection, and inner fortitude."
         },
         {
             lines: [
@@ -314,9 +362,10 @@
                 "Not rushing through, not falling behind,",
                 "just meeting each piece at its state."
             ],
-            shape: "hourglass",
-            title: "Time's Keeper",
-            meaning: "An hourglass of flowing particles—time itself rendered visible, showing how she moves through moments with perfect presence, neither rushing nor lagging."
+            shape: "amber",
+            title: "Amber",
+            meaning: "She moves through time with perfect presence—neither rushing nor lingering, holding each moment with care.",
+            properties: "Amber: Ancient stone of patience and time. Absorbs negative energy, promotes balance and wisdom."
         },
         {
             lines: [
@@ -325,9 +374,10 @@
                 "Like even the busiest days she holds",
                 "can't quite disturb her inner pace."
             ],
-            shape: "balanced_yin",
-            title: "Grace & Strength United",
-            meaning: "A yin-yang of light and movement—calm and grace in perfect balance, showing the beautiful duality of strength that doesn't fight and peace that doesn't flee."
+            shape: "rose_quartz",
+            title: "Rose Quartz",
+            meaning: "Grace and strength in perfect harmony—the beautiful duality of calm that doesn't flee and power that doesn't fight.",
+            properties: "Rose Quartz: Stone of unconditional love and peace. Balances emotions, nurtures gentleness and compassion."
         },
         {
             lines: [
@@ -336,9 +386,10 @@
                 "In the way she listens, understands,",
                 "in the way she reads unspoken spaces."
             ],
-            shape: "listening_eye",
-            title: "The Seeing Heart",
-            meaning: "An eye formed of particles—symbolizing her gift of truly seeing and hearing what others miss, noticing the unspoken, understanding the invisible."
+            shape: "amethyst",
+            title: "Amethyst",
+            meaning: "Her gift of truly seeing—noticing what others miss, understanding the invisible, reading the unspoken.",
+            properties: "Amethyst: Stone of intuition and spiritual wisdom. Enhances perception, deepens understanding, opens the third eye."
         },
         {
             lines: [
@@ -347,9 +398,10 @@
                 "The quiet beauty in passing skies,",
                 "the kind of things that stay with you."
             ],
-            shape: "scattered_beauty",
-            title: "Collected Moments",
-            meaning: "Delicate particles gathering like precious findings—each one a small beauty she's noticed and held onto, the way some people collect seashells or moments of light."
+            shape: "opal",
+            title: "Opal",
+            meaning: "Each small beauty she collects—moments of light, hidden colors, precious findings that others rush past.",
+            properties: "Opal: Stone of inspiration and memory. Reveals hidden beauty, amplifies emotions, brings light to the overlooked."
         },
         {
             lines: [
@@ -358,9 +410,10 @@
                 "Because even a sunset seems to learn",
                 "how to deepen just to match her style."
             ],
-            shape: "sunset",
-            title: "The Deepening Sky",
-            meaning: "A horizon of warm, descending light—representing how even nature seems to respond to her presence, becoming more beautiful in reflection of who she is."
+            shape: "citrine",
+            title: "Citrine",
+            meaning: "Like a deepening sunset, the world becomes more beautiful in response to her presence.",
+            properties: "Citrine: Stone of joy and abundance. Radiates warmth and positivity, enhances natural beauty."
         },
         {
             lines: [
@@ -369,9 +422,10 @@
                 "Not trying to hold or change her course,",
                 "just watching with a kind of quiet pride."
             ],
-            shape: "heart",
-            title: "Quiet Admiration",
-            meaning: "A heart formed of golden light—the shape of admiration that doesn't need to speak, love that doesn't need to control, pride that simply witnesses and celebrates."
+            shape: "ruby",
+            title: "Ruby",
+            meaning: "A heart of admiration—love that doesn't need to control, pride that simply witnesses and celebrates.",
+            properties: "Ruby: Stone of passion and devotion. Inspires confidence, courage, and deep, abiding love."
         },
         {
             lines: [
@@ -380,9 +434,10 @@
                 "Building herself piece by piece",
                 "into something steady and untamed."
             ],
-            shape: "growth_spiral",
-            title: "The Building Journey",
-            meaning: "An upward spiral of becoming—each revolution representing growth, each layer showing how she's constructed herself piece by piece into something magnificent and free."
+            shape: "emerald",
+            title: "Emerald",
+            meaning: "An upward journey of growth—each layer showing how she's built herself into something magnificent and free.",
+            properties: "Emerald: Stone of growth and renewal. Symbolizes rebirth, patience, and the wisdom gained through building oneself."
         },
         {
             lines: [
@@ -391,9 +446,10 @@
                 "Just a quiet kind of awe that grows",
                 "every time her presence remains."
             ],
-            shape: "expanding_awe",
-            title: "Growing Wonder",
-            meaning: "Particles expanding gently outward like a held breath—the visual of awe itself, that sense of wonder that keeps growing the more you witness someone truly remarkable."
+            shape: "peridot",
+            title: "Peridot",
+            meaning: "Wonder that expands gently outward—awe itself made visible, growing with each moment of witnessing.",
+            properties: "Peridot: Stone of compassion and wonder. Brings lightness, reduces stress, opens the heart to new experiences."
         },
         {
             lines: [
@@ -402,9 +458,10 @@
                 "Not because the world has changed,",
                 "but because it's her day."
             ],
-            shape: "crown",
-            title: "Her Day",
-            meaning: "A crown of light particles—not demanding or loud, but gentle and radiant. Today belongs to her, and the universe knows it."
+            shape: "diamond",
+            title: "Diamond",
+            meaning: "A crown of pure light—not loud or demanding, but brilliantly radiant. Today belongs to her.",
+            properties: "Diamond: Stone of invincibility and clarity. Represents strength, purity, and eternal brilliance."
         },
         {
             lines: [
@@ -413,9 +470,10 @@
                 "Just the simple truth that who she is",
                 "has already shaped so much instead."
             ],
-            shape: "truth_sphere",
-            title: "Simple Truth",
-            meaning: "A perfect, complete sphere—representing wholeness and truth. No embellishment needed, just the pure reality of her impact rendered in light."
+            shape: "clear_quartz",
+            title: "Clear Quartz",
+            meaning: "Pure truth rendered in light—no embellishment needed, just the complete reality of her impact.",
+            properties: "Clear Quartz: Master healer and stone of clarity. Amplifies truth, purifies intentions, brings perfect balance."
         },
         {
             lines: [
@@ -424,9 +482,10 @@
                 "Like a sky that keeps finding new colors",
                 "and never forgets its blue."
             ],
-            shape: "sky_layers",
-            title: "Endless Sky",
-            meaning: "Layers of color shifting and deepening—like a sky that constantly discovers new beauty while remaining fundamentally itself. Growth that's authentic, not performative."
+            shape: "lapis_lazuli",
+            title: "Lapis Lazuli",
+            meaning: "Like an endless sky discovering new depths—growth that's authentic, not performative, forever true to itself.",
+            properties: "Lapis Lazuli: Stone of wisdom and truth. Encourages self-awareness, honest expression, and inner vision."
         },
         {
             lines: [
@@ -435,9 +494,10 @@
                 "To the quiet strength, the gentle care,",
                 "to the person she's already become so naturally."
             ],
-            shape: "timeline",
-            title: "Past, Present, Future",
-            meaning: "A flowing timeline of particles—honoring everything she's carried, celebrating who she is now, and holding space for all she'll become."
+            shape: "labradorite",
+            title: "Labradorite",
+            meaning: "A shimmering timeline—honoring all she's carried, celebrating who she is, holding space for all she'll become.",
+            properties: "Labradorite: Stone of transformation and magic. Bridges past, present, and future with mystical energy."
         },
         {
             lines: [
@@ -446,9 +506,10 @@
                 "Then the world's only getting better",
                 "with every step she takes."
             ],
-            shape: "footsteps",
-            title: "The Path Forward",
-            meaning: "Particles forming footsteps stretching into infinity—each step she takes literally making the world better, leaving trails of light behind her."
+            shape: "aventurine",
+            title: "Green Aventurine",
+            meaning: "Each step forward leaves trails of light—opportunity and growth following in her wake.",
+            properties: "Green Aventurine: Stone of opportunity and luck. Attracts prosperity, promotes growth, manifests possibilities."
         },
         {
             lines: [
@@ -456,9 +517,10 @@
                 "they change how it's seen, how it's felt, how it stays…",
                 "…and today just happens to be hers. 💜"
             ],
-            shape: "universe",
-            title: "Her Universe",
-            meaning: "The complete celestial sphere—a universe unto herself. Not just living in the world, but fundamentally changing it by being in it. Everything, all at once."
+            shape: "alexandrite",
+            title: "Alexandrite",
+            meaning: "A rare and magical universe—she doesn't just exist in the world, she fundamentally transforms it.",
+            properties: "Alexandrite: Rarest stone of transformation. Changes with light, symbolizes magic, adaptability, and the extraordinary."
         }
     ];
 
@@ -536,311 +598,388 @@
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // Shape generation functions
-    function getPointOnOrbit(i) {
-        const angle = (i / PARTICLE_COUNT) * Math.PI * 8;
-        const radius = 8 + Math.sin(angle * 3) * 2;
-        const height = Math.sin(angle * 1.5) * 3;
+    // Gemstone crystal generation functions
+    
+    // Helper: Create faceted crystal structure
+    function createFacetedCrystal(baseVertices, height, r, g, b, sparkle = true) {
+        const points = [];
+        const numLayers = 40;
+        
+        // Create layered facets
+        for (let layer = 0; layer < numLayers; layer++) {
+            const t = layer / numLayers;
+            const scale = 1 - Math.abs(t - 0.5) * 1.6; // Diamond shape
+            
+            baseVertices.forEach((vertex, i) => {
+                const nextVertex = baseVertices[(i + 1) % baseVertices.length];
+                const steps = 30;
+                
+                for (let s = 0; s < steps; s++) {
+                    const edgeT = s / steps;
+                    const x = (vertex.x + (nextVertex.x - vertex.x) * edgeT) * scale;
+                    const z = (vertex.z + (nextVertex.z - vertex.z) * edgeT) * scale;
+                    const y = (t - 0.5) * height;
+                    
+                    // Add sparkle variation
+                    const brightness = sparkle ? (0.7 + Math.random() * 0.3) : 1.0;
+                    
+                    points.push({
+                        x: x + (Math.random() - 0.5) * 0.3,
+                        y: y + (Math.random() - 0.5) * 0.3,
+                        z: z + (Math.random() - 0.5) * 0.3,
+                        r: r * brightness,
+                        g: g * brightness,
+                        b: b * brightness
+                    });
+                }
+            });
+        }
+        
+        return points;
+    }
+
+    function getPointOnMoonstone(i) {
+        // Pale, pearlescent sphere with subtle glow
+        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
+        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
+        const r = 8 + Math.sin(theta * 5) * 0.5;
+        
+        const brightness = 0.9 + Math.random() * 0.1;
+        return {
+            x: r * Math.cos(theta) * Math.sin(phi),
+            y: r * Math.sin(theta) * Math.sin(phi),
+            z: r * Math.cos(phi),
+            r: 0.95 * brightness,
+            g: 0.92 * brightness,
+            b: 0.98 * brightness
+        };
+    }
+
+    function getPointOnStarSapphire(i) {
+        // Deep blue hexagonal crystal with star pattern
+        const hexVertices = [];
+        for (let j = 0; j < 6; j++) {
+            const angle = (j / 6) * Math.PI * 2;
+            hexVertices.push({ x: Math.cos(angle) * 6, z: Math.sin(angle) * 6 });
+        }
+        
+        const points = createFacetedCrystal(hexVertices, 14, 0.2, 0.3, 0.85, true);
+        return points[i % points.length];
+    }
+
+    function getPointOnAquamarine(i) {
+        // Pale blue-green hexagonal crystal
+        const hexVertices = [];
+        for (let j = 0; j < 6; j++) {
+            const angle = (j / 6) * Math.PI * 2;
+            hexVertices.push({ x: Math.cos(angle) * 5, z: Math.sin(angle) * 5 });
+        }
+        
+        const points = createFacetedCrystal(hexVertices, 16, 0.5, 0.85, 0.88, true);
+        return points[i % points.length];
+    }
+
+    function getPointOnOnyx(i) {
+        // Dark, smooth oval with subtle bands
+        const angle = (i / PARTICLE_COUNT) * Math.PI * 2 * 8;
+        const height = ((i / PARTICLE_COUNT) - 0.5) * 15;
+        const radius = 6 * (1 - Math.abs(height / 15) * 0.5);
+        
+        const bandBrightness = 0.15 + Math.abs(Math.sin(height * 0.5)) * 0.1;
         return {
             x: radius * Math.cos(angle),
             y: height,
             z: radius * Math.sin(angle),
-            r: 1.0, g: 0.85, b: 0.7
+            r: bandBrightness,
+            g: bandBrightness,
+            b: bandBrightness
         };
     }
 
-    function getPointOnConstellation(i) {
-        // Create star cluster
-        const clusterCount = 12;
-        const cluster = Math.floor(i / (PARTICLE_COUNT / clusterCount));
-        const phi = (cluster / clusterCount) * Math.PI * 2;
-        const theta = Math.acos(-1 + (2 * cluster) / clusterCount);
-        const r = 12;
-        const cx = r * Math.cos(phi) * Math.sin(theta);
-        const cy = r * Math.sin(phi) * Math.sin(theta);
-        const cz = r * Math.cos(theta);
-        
-        const spread = 1.5;
-        return {
-            x: cx + (Math.random() - 0.5) * spread,
-            y: cy + (Math.random() - 0.5) * spread,
-            z: cz + (Math.random() - 0.5) * spread,
-            r: 1.0, g: 0.9, b: 0.75
-        };
-    }
-
-    function getPointOnGentleWaves(i) {
-        const x = ((i % 100) - 50) * 0.4;
-        const z = (Math.floor(i / 100) - 75) * 0.4;
-        const y = Math.sin(x * 0.3) * Math.cos(z * 0.3) * 3;
-        return {
-            x: x, y: y, z: z,
-            r: 0.9, g: 0.8, b: 0.7
-        };
-    }
-
-    function getPointOnAnchor(i) {
-        const isBase = i < PARTICLE_COUNT * 0.4;
-        if (isBase) {
-            const angle = (i / (PARTICLE_COUNT * 0.4)) * Math.PI * 2;
-            const radius = 6;
-            return {
-                x: radius * Math.cos(angle),
-                y: -8,
-                z: radius * Math.sin(angle),
-                r: 0.8, g: 0.7, b: 0.6
-            };
-        } else {
-            const t = ((i - PARTICLE_COUNT * 0.4) / (PARTICLE_COUNT * 0.6));
-            const angle = t * Math.PI * 2 * 3;
-            const radius = 2 + t * 2;
-            return {
-                x: radius * Math.cos(angle),
-                y: -8 + t * 16,
-                z: radius * Math.sin(angle),
-                r: 1.0, g: 0.85, b: 0.7
-            };
-        }
-    }
-
-    function getPointOnHourglass(i) {
+    function getPointOnAmber(i) {
+        // Warm golden-orange organic shape
         const t = i / PARTICLE_COUNT;
-        const angle = t * Math.PI * 2 * 8;
-        const height = (t - 0.5) * 20;
-        const radius = 5 * (1 - Math.abs(height) / 12);
+        const phi = Math.acos(-1 + 2 * t);
+        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
+        const r = 7 + Math.sin(theta * 3) * 1.5;
+        
+        const warmth = 0.85 + Math.random() * 0.15;
         return {
-            x: radius * Math.cos(angle),
-            y: height,
-            z: radius * Math.sin(angle),
-            r: 1.0, g: 0.8 + t * 0.2, b: 0.6 + t * 0.2
+            x: r * Math.cos(theta) * Math.sin(phi),
+            y: r * Math.sin(theta) * Math.sin(phi),
+            z: r * Math.cos(phi),
+            r: 1.0 * warmth,
+            g: 0.7 * warmth,
+            b: 0.2 * warmth
         };
     }
 
-    function getPointOnBalancedYin(i) {
-        const angle = (i / PARTICLE_COUNT) * Math.PI * 2;
+    function getPointOnRoseQuartz(i) {
+        // Soft pink hexagonal crystal cluster
+        const clusterCount = 5;
+        const cluster = Math.floor(i / (PARTICLE_COUNT / clusterCount));
+        const localI = i % (PARTICLE_COUNT / clusterCount);
+        
+        const clusterAngle = (cluster / clusterCount) * Math.PI * 2;
+        const offsetX = Math.cos(clusterAngle) * 3;
+        const offsetZ = Math.sin(clusterAngle) * 3;
+        
+        const t = localI / (PARTICLE_COUNT / clusterCount);
+        const y = (t - 0.5) * 10;
+        const radius = 3 * (1 - Math.abs(t - 0.5) * 1.5);
+        const angle = t * Math.PI * 2 * 6;
+        
+        const softness = 0.9 + Math.random() * 0.1;
+        return {
+            x: offsetX + radius * Math.cos(angle),
+            y: y,
+            z: offsetZ + radius * Math.sin(angle),
+            r: 1.0 * softness,
+            g: 0.75 * softness,
+            b: 0.80 * softness
+        };
+    }
+
+    function getPointOnAmethyst(i) {
+        // Purple hexagonal crystal points
+        const pointCount = 7;
+        const point = Math.floor(i / (PARTICLE_COUNT / pointCount));
+        const localI = i % (PARTICLE_COUNT / pointCount);
+        
+        const baseAngle = (point / pointCount) * Math.PI * 2;
+        const baseRadius = point === 0 ? 0 : 6;
+        const baseX = Math.cos(baseAngle) * baseRadius;
+        const baseZ = Math.sin(baseAngle) * baseRadius;
+        
+        const t = localI / (PARTICLE_COUNT / pointCount);
+        const y = t * 12 - 6;
+        const radius = (1 - t) * 2.5;
+        const angle = t * Math.PI * 2 * 6;
+        
+        const depth = 0.7 + Math.random() * 0.3;
+        return {
+            x: baseX + radius * Math.cos(angle),
+            y: y,
+            z: baseZ + radius * Math.sin(angle),
+            r: 0.6 * depth,
+            g: 0.3 * depth,
+            b: 0.9 * depth
+        };
+    }
+
+    function getPointOnOpal(i) {
+        // Iridescent sphere with color shifting
+        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
+        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
+        const r = 7;
+        
+        const colorShift = Math.sin(theta * 3 + phi * 2);
+        const r_val = 0.9 + colorShift * 0.1;
+        const g_val = 0.7 + Math.cos(theta * 2) * 0.3;
+        const b_val = 0.8 + Math.sin(phi * 3) * 0.2;
+        
+        return {
+            x: r * Math.cos(theta) * Math.sin(phi),
+            y: r * Math.sin(theta) * Math.sin(phi),
+            z: r * Math.cos(phi),
+            r: r_val,
+            g: g_val,
+            b: b_val
+        };
+    }
+
+    function getPointOnCitrine(i) {
+        // Warm yellow-orange hexagonal crystal
+        const hexVertices = [];
+        for (let j = 0; j < 6; j++) {
+            const angle = (j / 6) * Math.PI * 2;
+            hexVertices.push({ x: Math.cos(angle) * 5.5, z: Math.sin(angle) * 5.5 });
+        }
+        
+        const points = createFacetedCrystal(hexVertices, 15, 1.0, 0.85, 0.3, true);
+        return points[i % points.length];
+    }
+
+    function getPointOnRuby(i) {
+        // Deep red hexagonal crystal with brilliant facets
+        const hexVertices = [];
+        for (let j = 0; j < 6; j++) {
+            const angle = (j / 6) * Math.PI * 2;
+            hexVertices.push({ x: Math.cos(angle) * 4.5, z: Math.sin(angle) * 4.5 });
+        }
+        
+        const points = createFacetedCrystal(hexVertices, 13, 0.9, 0.15, 0.2, true);
+        return points[i % points.length];
+    }
+
+    function getPointOnEmerald(i) {
+        // Rich green hexagonal crystal
+        const hexVertices = [];
+        for (let j = 0; j < 6; j++) {
+            const angle = (j / 6) * Math.PI * 2;
+            hexVertices.push({ x: Math.cos(angle) * 5, z: Math.sin(angle) * 5 });
+        }
+        
+        const points = createFacetedCrystal(hexVertices, 16, 0.2, 0.85, 0.4, true);
+        return points[i % points.length];
+    }
+
+    function getPointOnPeridot(i) {
+        // Lime-green olive crystal
+        const octVertices = [];
+        for (let j = 0; j < 8; j++) {
+            const angle = (j / 8) * Math.PI * 2;
+            octVertices.push({ x: Math.cos(angle) * 6, z: Math.sin(angle) * 6 });
+        }
+        
+        const points = createFacetedCrystal(octVertices, 14, 0.6, 0.9, 0.3, true);
+        return points[i % points.length];
+    }
+
+    function getPointOnDiamond(i) {
+        // Brilliant cut diamond with maximum sparkle
+        const octVertices = [];
+        for (let j = 0; j < 8; j++) {
+            const angle = (j / 8) * Math.PI * 2;
+            octVertices.push({ x: Math.cos(angle) * 4, z: Math.sin(angle) * 4 });
+        }
+        
+        const t = (i % 1000) / 1000;
+        const layer = Math.floor(i / 1000);
+        const scale = 1 - Math.abs(t - 0.5) * 1.8;
+        const vertexIndex = Math.floor(t * 8);
+        const nextIndex = (vertexIndex + 1) % 8;
+        const edgeT = (t * 8) % 1;
+        
+        const v1 = octVertices[vertexIndex];
+        const v2 = octVertices[nextIndex];
+        
+        const x = (v1.x + (v2.x - v1.x) * edgeT) * scale;
+        const z = (v1.z + (v2.z - v1.z) * edgeT) * scale;
+        const y = (t - 0.5) * 12;
+        
+        // Maximum brilliance and sparkle
+        const brilliance = 0.85 + Math.random() * 0.15;
+        const rainbow = Math.sin(i * 0.01) * 0.05;
+        
+        return {
+            x: x + (Math.random() - 0.5) * 0.2,
+            y: y + (Math.random() - 0.5) * 0.2,
+            z: z + (Math.random() - 0.5) * 0.2,
+            r: brilliance + rainbow,
+            g: brilliance,
+            b: brilliance + rainbow * 0.5
+        };
+    }
+
+    function getPointOnClearQuartz(i) {
+        // Clear hexagonal crystal with perfect clarity
+        const hexVertices = [];
+        for (let j = 0; j < 6; j++) {
+            const angle = (j / 6) * Math.PI * 2;
+            hexVertices.push({ x: Math.cos(angle) * 6, z: Math.sin(angle) * 6 });
+        }
+        
+        const points = createFacetedCrystal(hexVertices, 18, 0.98, 0.98, 1.0, true);
+        return points[i % points.length];
+    }
+
+    function getPointOnLapisLazuli(i) {
+        // Deep blue with gold flecks
+        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
+        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
         const r = 8;
-        const side = Math.sin(angle) > 0 ? 1 : -1;
-        const offset = side * Math.cos(angle * 2) * 3;
-        return {
-            x: r * Math.cos(angle) + offset,
-            y: r * Math.sin(angle),
-            z: (Math.random() - 0.5) * 2,
-            r: side > 0 ? 1.0 : 0.7,
-            g: side > 0 ? 0.9 : 0.6,
-            b: side > 0 ? 0.8 : 0.5
-        };
-    }
-
-    function getPointOnListeningEye(i) {
-        const isIris = i < PARTICLE_COUNT * 0.3;
-        if (isIris) {
-            const angle = (i / (PARTICLE_COUNT * 0.3)) * Math.PI * 2;
-            const radius = Math.random() * 3;
-            return {
-                x: radius * Math.cos(angle),
-                y: radius * Math.sin(angle),
-                z: 0,
-                r: 0.3, g: 0.2, b: 0.4
-            };
-        } else {
-            const angle = ((i - PARTICLE_COUNT * 0.3) / (PARTICLE_COUNT * 0.7)) * Math.PI * 2;
-            const radius = 6 + Math.random() * 2;
-            return {
-                x: radius * Math.cos(angle) * 1.5,
-                y: radius * Math.sin(angle),
-                z: (Math.random() - 0.5) * 3,
-                r: 1.0, g: 0.85, b: 0.7
-            };
-        }
-    }
-
-    function getPointOnScatteredBeauty(i) {
-        const clusterCount = 50;
-        const cluster = Math.floor(Math.random() * clusterCount);
-        const angle = (cluster / clusterCount) * Math.PI * 2;
-        const radius = 8 + Math.random() * 8;
-        const height = (Math.random() - 0.5) * 15;
-        return {
-            x: radius * Math.cos(angle) + (Math.random() - 0.5) * 2,
-            y: height,
-            z: radius * Math.sin(angle) + (Math.random() - 0.5) * 2,
-            r: 0.9 + Math.random() * 0.1,
-            g: 0.7 + Math.random() * 0.2,
-            b: 0.6 + Math.random() * 0.2
-        };
-    }
-
-    function getPointOnSunset(i) {
-        const x = ((i % 150) - 75) * 0.3;
-        const z = -15 + (Math.floor(i / 150)) * 0.1;
-        const horizonDist = Math.abs(x) / 15;
-        const y = -5 + Math.exp(-horizonDist) * 8;
-        return {
-            x: x,
-            y: y,
-            z: z,
-            r: 1.0,
-            g: 0.6 + (1 - horizonDist) * 0.3,
-            b: 0.4 + (1 - horizonDist) * 0.2
-        };
-    }
-
-    function getPointOnHeart(i) {
-        const t = (i / PARTICLE_COUNT) * Math.PI * 2;
-        const x = 16 * Math.pow(Math.sin(t), 3);
-        const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-        const z = (Math.random() - 0.5) * 4;
-        const scale = 0.5;
-        return {
-            x: x * scale,
-            y: y * scale,
-            z: z,
-            r: 1.0, g: 0.7, b: 0.5
-        };
-    }
-
-    function getPointOnGrowthSpiral(i) {
-        const t = (i / PARTICLE_COUNT) * Math.PI * 8;
-        const radius = t * 0.8;
-        const height = t * 1.5;
-        return {
-            x: radius * Math.cos(t),
-            y: height - 12,
-            z: radius * Math.sin(t),
-            r: 0.7 + (i / PARTICLE_COUNT) * 0.3,
-            g: 0.6 + (i / PARTICLE_COUNT) * 0.3,
-            b: 0.5 + (i / PARTICLE_COUNT) * 0.3
-        };
-    }
-
-    function getPointOnExpandingAwe(i) {
-        const layer = Math.floor(i / (PARTICLE_COUNT / 5));
-        const angle = (i / (PARTICLE_COUNT / 5)) * Math.PI * 2 * 3;
-        const radius = 4 + layer * 2.5;
-        return {
-            x: radius * Math.cos(angle),
-            y: radius * Math.sin(angle),
-            z: (Math.random() - 0.5) * (layer + 1),
-            r: 1.0 - layer * 0.1,
-            g: 0.85 - layer * 0.1,
-            b: 0.7 - layer * 0.1
-        };
-    }
-
-    function getPointOnCrown(i) {
-        const isBase = i < PARTICLE_COUNT * 0.4;
-        if (isBase) {
-            const angle = (i / (PARTICLE_COUNT * 0.4)) * Math.PI * 2;
-            const radius = 6;
-            return {
-                x: radius * Math.cos(angle),
-                y: 0,
-                z: radius * Math.sin(angle),
-                r: 1.0, g: 0.85, b: 0.6
-            };
-        } else {
-            const idx = i - PARTICLE_COUNT * 0.4;
-            const peakCount = 8;
-            const peak = Math.floor(idx / (PARTICLE_COUNT * 0.6 / peakCount));
-            const t = (idx % (PARTICLE_COUNT * 0.6 / peakCount)) / (PARTICLE_COUNT * 0.6 / peakCount);
-            const angle = (peak / peakCount) * Math.PI * 2;
-            const radius = 6 * (1 - t);
-            const height = t * 10;
-            return {
-                x: radius * Math.cos(angle),
-                y: height,
-                z: radius * Math.sin(angle),
-                r: 1.0, g: 0.9, b: 0.7
-            };
-        }
-    }
-
-    function getPointOnTruthSphere(i) {
-        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
-        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
-        const r = 10;
+        
+        // Mostly deep blue, occasional gold fleck
+        const isGoldFleck = Math.random() > 0.92;
+        
         return {
             x: r * Math.cos(theta) * Math.sin(phi),
             y: r * Math.sin(theta) * Math.sin(phi),
             z: r * Math.cos(phi),
-            r: 1.0, g: 0.9, b: 0.8
+            r: isGoldFleck ? 0.9 : 0.15,
+            g: isGoldFleck ? 0.7 : 0.25,
+            b: isGoldFleck ? 0.3 : 0.75
         };
     }
 
-    function getPointOnSkyLayers(i) {
-        const layer = Math.floor(i / (PARTICLE_COUNT / 7));
-        const x = ((i % 200) - 100) * 0.3;
-        const z = (Math.floor((i % (PARTICLE_COUNT / 7)) / 200) - 37) * 0.3;
-        const y = layer * 3 - 10;
-        const colors = [
-            [0.3, 0.2, 0.5],  // Deep purple
-            [0.5, 0.3, 0.6],  // Purple
-            [0.7, 0.5, 0.7],  // Light purple
-            [0.9, 0.7, 0.7],  // Pink
-            [1.0, 0.8, 0.6],  // Orange
-            [1.0, 0.9, 0.7],  // Yellow
-            [0.9, 0.95, 1.0]  // Light blue
-        ];
-        const color = colors[layer] || [1, 1, 1];
-        return {
-            x: x, y: y, z: z,
-            r: color[0], g: color[1], b: color[2]
-        };
-    }
-
-    function getPointOnTimeline(i) {
-        const section = Math.floor(i / (PARTICLE_COUNT / 3));
-        const t = (i % (PARTICLE_COUNT / 3)) / (PARTICLE_COUNT / 3);
-        const x = -15 + section * 15;
-        const y = Math.sin(t * Math.PI * 2 * 5) * 3;
-        const z = (Math.random() - 0.5) * 4;
-        const colors = [
-            [0.7, 0.6, 0.5],  // Past (sepia)
-            [1.0, 0.85, 0.7], // Present (bright)
-            [0.9, 0.9, 1.0]   // Future (ethereal)
-        ];
-        const color = colors[section] || [1, 1, 1];
-        return {
-            x: x + (Math.random() - 0.5) * 2,
-            y: y,
-            z: z,
-            r: color[0], g: color[1], b: color[2]
-        };
-    }
-
-    function getPointOnFootsteps(i) {
-        const stepCount = 12;
-        const step = Math.floor(i / (PARTICLE_COUNT / stepCount));
-        const t = (i % (PARTICLE_COUNT / stepCount)) / (PARTICLE_COUNT / stepCount);
-        
-        const stepX = step * 3 - 18;
-        const stepY = -8;
-        const stepZ = (step % 2) * 2 - 1;
-        
-        const angle = t * Math.PI * 2;
-        const radius = 1.5;
-        
-        return {
-            x: stepX + radius * Math.cos(angle),
-            y: stepY,
-            z: stepZ * 2 + radius * Math.sin(angle),
-            r: 0.8 + step / stepCount * 0.2,
-            g: 0.7 + step / stepCount * 0.2,
-            b: 0.6 + step / stepCount * 0.3
-        };
-    }
-
-    function getPointOnUniverse(i) {
+    function getPointOnLabradorite(i) {
+        // Gray with iridescent blue/green/gold flashes
         const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
         const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
-        const r = 5 + Math.random() * 10;
+        const r = 7.5;
+        
+        const flashAngle = Math.sin(theta * 5 + phi * 3);
+        const showFlash = flashAngle > 0.7;
+        
+        let r_val, g_val, b_val;
+        if (showFlash) {
+            // Iridescent flash
+            const hue = Math.sin(theta * 2);
+            if (hue > 0.5) {
+                r_val = 0.3; g_val = 0.5; b_val = 0.9; // Blue flash
+            } else if (hue > 0) {
+                r_val = 0.3; g_val = 0.8; b_val = 0.6; // Green flash
+            } else {
+                r_val = 0.9; g_val = 0.7; b_val = 0.3; // Gold flash
+            }
+        } else {
+            // Base gray
+            const gray = 0.35 + Math.random() * 0.1;
+            r_val = gray; g_val = gray; b_val = gray * 1.1;
+        }
+        
         return {
             x: r * Math.cos(theta) * Math.sin(phi),
             y: r * Math.sin(theta) * Math.sin(phi),
             z: r * Math.cos(phi),
-            r: 0.7 + Math.random() * 0.3,
-            g: 0.6 + Math.random() * 0.3,
-            b: 0.5 + Math.random() * 0.4
+            r: r_val,
+            g: g_val,
+            b: b_val
+        };
+    }
+
+    function getPointOnAventurine(i) {
+        // Green with sparkly inclusions
+        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
+        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
+        const r = 7;
+        
+        const hasSparkle = Math.random() > 0.85;
+        const brightness = hasSparkle ? 1.2 : 0.9;
+        
+        return {
+            x: r * Math.cos(theta) * Math.sin(phi),
+            y: r * Math.sin(theta) * Math.sin(phi),
+            z: r * Math.cos(phi),
+            r: 0.3 * brightness,
+            g: 0.75 * brightness,
+            b: 0.4 * brightness
+        };
+    }
+
+    function getPointOnAlexandrite(i) {
+        // Color-change: blue-green to purple-red
+        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
+        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
+        const r = 8;
+        
+        // Create color change effect based on position
+        const changeT = (Math.sin(theta * 2) + 1) / 2;
+        
+        const r_val = 0.5 + changeT * 0.5;  // Shifts from teal to red
+        const g_val = 0.6 - changeT * 0.3;  // Shifts from green to purple
+        const b_val = 0.7 + changeT * 0.2;  // Keeps blue-purple
+        
+        const sparkle = 0.9 + Math.random() * 0.1;
+        
+        return {
+            x: r * Math.cos(theta) * Math.sin(phi),
+            y: r * Math.sin(theta) * Math.sin(phi),
+            z: r * Math.cos(phi),
+            r: r_val * sparkle,
+            g: g_val * sparkle,
+            b: b_val * sparkle
         };
     }
 
@@ -849,25 +988,25 @@
         for (let i = 0; i < PARTICLE_COUNT; i++) {
             let p;
             switch(shapeName) {
-                case 'orbit': p = getPointOnOrbit(i); break;
-                case 'constellation': p = getPointOnConstellation(i); break;
-                case 'gentle_waves': p = getPointOnGentleWaves(i); break;
-                case 'anchor': p = getPointOnAnchor(i); break;
-                case 'hourglass': p = getPointOnHourglass(i); break;
-                case 'balanced_yin': p = getPointOnBalancedYin(i); break;
-                case 'listening_eye': p = getPointOnListeningEye(i); break;
-                case 'scattered_beauty': p = getPointOnScatteredBeauty(i); break;
-                case 'sunset': p = getPointOnSunset(i); break;
-                case 'heart': p = getPointOnHeart(i); break;
-                case 'growth_spiral': p = getPointOnGrowthSpiral(i); break;
-                case 'expanding_awe': p = getPointOnExpandingAwe(i); break;
-                case 'crown': p = getPointOnCrown(i); break;
-                case 'truth_sphere': p = getPointOnTruthSphere(i); break;
-                case 'sky_layers': p = getPointOnSkyLayers(i); break;
-                case 'timeline': p = getPointOnTimeline(i); break;
-                case 'footsteps': p = getPointOnFootsteps(i); break;
-                case 'universe': p = getPointOnUniverse(i); break;
-                default: p = getPointOnOrbit(i);
+                case 'moonstone': p = getPointOnMoonstone(i); break;
+                case 'star_sapphire': p = getPointOnStarSapphire(i); break;
+                case 'aquamarine': p = getPointOnAquamarine(i); break;
+                case 'onyx': p = getPointOnOnyx(i); break;
+                case 'amber': p = getPointOnAmber(i); break;
+                case 'rose_quartz': p = getPointOnRoseQuartz(i); break;
+                case 'amethyst': p = getPointOnAmethyst(i); break;
+                case 'opal': p = getPointOnOpal(i); break;
+                case 'citrine': p = getPointOnCitrine(i); break;
+                case 'ruby': p = getPointOnRuby(i); break;
+                case 'emerald': p = getPointOnEmerald(i); break;
+                case 'peridot': p = getPointOnPeridot(i); break;
+                case 'diamond': p = getPointOnDiamond(i); break;
+                case 'clear_quartz': p = getPointOnClearQuartz(i); break;
+                case 'lapis_lazuli': p = getPointOnLapisLazuli(i); break;
+                case 'labradorite': p = getPointOnLabradorite(i); break;
+                case 'aventurine': p = getPointOnAventurine(i); break;
+                case 'alexandrite': p = getPointOnAlexandrite(i); break;
+                default: p = getPointOnMoonstone(i);
             }
 
             targetPositions[i * 3] = p.x;
@@ -891,6 +1030,7 @@
     const shapeInfo = document.getElementById('shape-info');
     const shapeTitle = document.getElementById('shape-title');
     const shapeMeaning = document.getElementById('shape-meaning');
+    const gemstoneProperties = document.getElementById('gemstone-properties');
     const progress = document.getElementById('progress');
     const controlsHint = document.getElementById('controls-hint');
 
@@ -920,6 +1060,7 @@
         // Update info
         shapeTitle.textContent = data.title;
         shapeMeaning.textContent = data.meaning;
+        gemstoneProperties.textContent = data.properties;
         
         // Update progress
         progress.textContent = `${index + 1} / ${poemData.length}`;
@@ -1044,7 +1185,7 @@
     });
 
     // Initialize first shape
-    setTargetShape('orbit');
+    setTargetShape('moonstone');
     animate();
 </script>
 </body>
