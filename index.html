@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Day That's Yours ✨</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Outfit:wght@300;400&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -26,17 +26,57 @@
             z-index: 1;
         }
         
+        #poem-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 800px;
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+            padding: 60px;
+        }
+        
+        .stanza {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            line-height: 2.8;
+            font-weight: 400;
+            color: #ffffff;
+            text-shadow: 
+                0 0 50px rgba(255, 255, 255, 0.9),
+                0 0 100px rgba(255, 255, 255, 0.5),
+                0 4px 12px rgba(0, 0, 0, 1);
+            margin-bottom: 1.5rem;
+            letter-spacing: 1.2px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 1s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .stanza-line {
+            animation-delay: calc(var(--line-index) * 0.15s);
+        }
+        
         #video-container {
             position: fixed;
             bottom: 20px;
-            right: 20px;
-            width: 180px;
-            height: 135px;
-            border: 2px solid rgba(255, 184, 140, 0.4);
+            left: 50%;
+            transform: translateX(-50%) scaleX(-1);
+            width: 160px;
+            height: 120px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             z-index: 100;
-            opacity: 0.6;
-            transform: scaleX(-1);
+            opacity: 0.5;
             overflow: hidden;
             backdrop-filter: blur(10px);
             background: rgba(0, 0, 0, 0.4);
@@ -53,260 +93,110 @@
             object-fit: cover; 
         }
         
-        #ui-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            pointer-events: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 60px;
-        }
-        
-        #poem-container {
-            max-width: 700px;
-            text-align: left;
-            opacity: 1;
-            transform: translateY(0);
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-right: auto;
-        }
-        
-        .stanza {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2rem;
-            line-height: 2.6;
-            font-weight: 500;
-            color: #fff;
-            text-shadow: 
-                0 0 40px rgba(255, 255, 255, 0.8),
-                0 0 80px rgba(255, 184, 140, 0.6),
-                0 4px 8px rgba(0, 0, 0, 1);
-            margin-bottom: 2rem;
-            letter-spacing: 1px;
-        }
-        
-        .stanza-line {
-            opacity: 0;
-            transform: translateX(-15px);
-            animation: lineReveal 0.9s ease forwards;
-            margin: 8px 0;
-        }
-        
-        @keyframes lineReveal {
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        #controls-hint {
-            position: fixed;
-            bottom: 320px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(10px);
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 184, 140, 0.2);
-            font-size: 0.65rem;
-            color: #ffdfcc;
-            max-width: 200px;
-            z-index: 100;
-            opacity: 0.7;
-            transition: all 0.3s ease;
-        }
-        
-        #controls-hint:hover {
-            opacity: 1;
-        }
-        
-        .control-item {
-            display: flex;
-            align-items: center;
-            margin: 5px 0;
-            gap: 8px;
-        }
-        
-        .control-icon {
-            font-size: 1rem;
-            min-width: 24px;
-        }
-        
-        #shape-info {
+        #info-panel {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            max-width: 280px;
-            background: rgba(0, 0, 0, 0.75);
+            max-width: 300px;
+            background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(10px);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 184, 140, 0.2);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
             z-index: 100;
-            opacity: 0.7;
-            transition: all 0.3s ease;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.8);
         }
         
-        #shape-info:hover {
+        #info-panel:hover {
             opacity: 1;
         }
         
-        #shape-title {
+        #constellation-name {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 600;
-            color: #ffdfcc;
+            color: #fff;
             margin-bottom: 6px;
-            text-shadow: 0 0 10px rgba(255, 184, 140, 0.3);
-        }
-        
-        #shape-meaning {
-            font-size: 0.65rem;
-            line-height: 1.4;
-            color: #d4c5b9;
-            font-weight: 300;
-            margin-bottom: 6px;
-        }
-        
-        #gemstone-properties {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid rgba(255, 184, 140, 0.15);
-            font-size: 0.6rem;
-            color: #c4b5a9;
-            font-style: italic;
-            line-height: 1.3;
         }
         
         #progress {
             position: fixed;
             top: 20px;
             right: 20px;
-            font-size: 0.75rem;
-            color: rgba(255, 223, 204, 0.6);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
             z-index: 100;
-            font-weight: 400;
+            font-weight: 300;
             background: rgba(0, 0, 0, 0.5);
-            padding: 8px 14px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 184, 140, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+            z-index: 100;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+        
+        #controls:hover {
+            opacity: 1;
+        }
+        
+        .control-line {
+            margin: 4px 0;
+        }
         
         @media (max-width: 768px) {
-            #ui-overlay {
-                flex-direction: column;
-                justify-content: flex-start;
-                padding: 80px 20px 20px 20px;
-            }
-            
             #poem-container {
-                max-width: 100%;
-                text-align: center;
-                margin-right: 0;
-                margin-bottom: 20px;
+                max-width: 90%;
+                padding: 40px 20px;
             }
             
             .stanza {
-                font-size: 1.1rem;
-                line-height: 2.0;
-            }
-            
-            #shape-info {
-                position: fixed;
-                top: auto;
-                bottom: 180px;
-                left: 20px;
-                right: 20px;
-                transform: none;
-                max-width: none;
-                padding: 20px;
-            }
-            
-            #shape-title {
                 font-size: 1.5rem;
-            }
-            
-            #shape-meaning, #gemstone-properties {
-                font-size: 0.9rem;
-            }
-            
-            #controls-hint {
-                bottom: 160px;
-                right: 10px;
-                left: auto;
-                max-width: 200px;
-                font-size: 0.8rem;
-                padding: 15px;
-            }
-            
-            .control-item {
-                margin: 6px 0;
-            }
-            
-            .control-icon {
-                font-size: 1.2rem;
-                min-width: 28px;
+                line-height: 2.4;
             }
             
             #video-container {
                 width: 120px;
                 height: 90px;
-                bottom: 10px;
-                right: 10px;
-            }
-            
-            #progress {
-                top: 15px;
-                right: 15px;
-                font-size: 0.9rem;
-                padding: 10px 16px;
             }
         }
     </style>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
-    <div id="ui-overlay">
-        <div id="poem-container"></div>
-    </div>
+    <div id="poem-container"></div>
     
-    <div id="shape-info">
-        <div id="shape-title"></div>
-        <div id="shape-meaning"></div>
-        <div id="gemstone-properties"></div>
+    <div id="info-panel">
+        <div id="constellation-name"></div>
+        <div id="constellation-meaning"></div>
     </div>
     
     <div id="progress"></div>
     
-    <div id="controls-hint">
-        <div class="control-item">
-            <span class="control-icon">👈👉</span>
-            <span>Swipe hand left/right to navigate</span>
-        </div>
-        <div class="control-item">
-            <span class="control-icon">✋</span>
-            <span>Raise hand to expand particles</span>
-        </div>
-        <div class="control-item">
-            <span class="control-icon">✊</span>
-            <span>Make fist to collapse</span>
-        </div>
-        <div class="control-item">
-            <span class="control-icon">👌</span>
-            <span>Pinch to pause and read</span>
-        </div>
+    <div id="controls">
+        <div class="control-line">👈👉 Swipe to navigate</div>
+        <div class="control-line">✋✊ Expand/Collapse</div>
     </div>
 
     <div id="video-container">
@@ -314,569 +204,492 @@
     </div>
 
 <script>
-    // Poem data with gemstones and their metaphysical meanings
     const poemData = [
         {
-            lines: [
-                "Some people arrive into a day",
-                "and nothing really changes shape,",
-                "The hours pass the way they do,",
-                "the sky remains the same escape."
-            ],
-            shape: "moonstone",
-            title: "Moonstone",
-            meaning: "These opening lines speak to the cycles of ordinary days—time moving in gentle rhythms, waiting for something extraordinary.",
-            properties: "Moonstone: Stone of new beginnings and cycles. Enhances intuition and promotes harmony with natural rhythms."
+            lines: ["Some people arrive into a day", "and nothing really changes shape,", "The hours pass the way they do,", "the sky remains the same escape."],
+            constellation: "circle",
+            name: "The Endless Circle",
+            meaning: "Days revolving in gentle cycles"
         },
         {
-            lines: [
-                "But then there are days like this—",
-                "the kind that feel a little more aware,",
-                "As if the world remembers softly",
-                "that someone like her is here."
-            ],
-            shape: "star_sapphire",
-            title: "Star Sapphire",
-            meaning: "Like a constellation awakening, the world becomes aware of her presence—everything connects into something meaningful.",
-            properties: "Star Sapphire: Stone of wisdom and spiritual awakening. Brings clarity, insight, and heightened awareness."
+            lines: ["But then there are days like this—", "the kind that feel a little more aware,", "As if the world remembers softly", "that someone like her is here."],
+            constellation: "star",
+            name: "The Awakening Star",
+            meaning: "Awareness blooming into connection"
         },
         {
-            lines: [
-                "Not in a way that asks for noise,",
-                "or celebration loud and bright,",
-                "But in the way small things align",
-                "a little better in her light."
-            ],
-            shape: "aquamarine",
-            title: "Aquamarine",
-            meaning: "Her influence is like calm water—quiet, graceful, helping everything flow into place without force.",
-            properties: "Aquamarine: Stone of calm and clarity. Brings soothing energy, reduces stress, promotes gentle strength."
+            lines: ["Not in a way that asks for noise,", "or celebration loud and bright,", "But in the way small things align", "a little better in her light."],
+            constellation: "flowing",
+            name: "Gentle Alignment",
+            meaning: "Quiet grace bringing harmony"
         },
         {
-            lines: [
-                "She doesn't try to be remarkable,",
-                "doesn't gather attention or claim,",
-                "Yet somehow everything around her",
-                "feels steadier just the same."
-            ],
-            shape: "onyx",
-            title: "Black Onyx",
-            meaning: "Like an anchor in chaos, she provides stability without seeking recognition—grounded, steady, essential.",
-            properties: "Black Onyx: Stone of strength and grounding. Provides stability, protection, and inner fortitude."
+            lines: ["She doesn't try to be remarkable,", "doesn't gather attention or claim,", "Yet somehow everything around her", "feels steadier just the same."],
+            constellation: "anchor",
+            name: "The Quiet Anchor",
+            meaning: "Steadiness without seeking"
         },
         {
-            lines: [
-                "The way she carries every moment,",
-                "as if time trusts her with its weight,",
-                "Not rushing through, not falling behind,",
-                "just meeting each piece at its state."
-            ],
-            shape: "amber",
-            title: "Amber",
-            meaning: "She moves through time with perfect presence—neither rushing nor lingering, holding each moment with care.",
-            properties: "Amber: Ancient stone of patience and time. Absorbs negative energy, promotes balance and wisdom."
+            lines: ["The way she carries every moment,", "as if time trusts her with its weight,", "Not rushing through, not falling behind,", "just meeting each piece at its state."],
+            constellation: "hourglass",
+            name: "Time's Keeper",
+            meaning: "Perfect presence in each moment"
         },
         {
-            lines: [
-                "There's something rare in how she moves,",
-                "like calm stitched carefully with grace,",
-                "Like even the busiest days she holds",
-                "can't quite disturb her inner pace."
-            ],
-            shape: "rose_quartz",
-            title: "Rose Quartz",
-            meaning: "Grace and strength in perfect harmony—the beautiful duality of calm that doesn't flee and power that doesn't fight.",
-            properties: "Rose Quartz: Stone of unconditional love and peace. Balances emotions, nurtures gentleness and compassion."
+            lines: ["There's something rare in how she moves,", "like calm stitched carefully with grace,", "Like even the busiest days she holds", "can't quite disturb her inner pace."],
+            constellation: "balanced",
+            name: "Grace & Strength",
+            meaning: "Calm and power in harmony"
         },
         {
-            lines: [
-                "And still, within all of that strength,",
-                "there's softness she never misplaces—",
-                "In the way she listens, understands,",
-                "in the way she reads unspoken spaces."
-            ],
-            shape: "amethyst",
-            title: "Amethyst",
-            meaning: "Her gift of truly seeing—noticing what others miss, understanding the invisible, reading the unspoken.",
-            properties: "Amethyst: Stone of intuition and spiritual wisdom. Enhances perception, deepens understanding, opens the third eye."
+            lines: ["And still, within all of that strength,", "there's softness she never misplaces—", "In the way she listens, understands,", "in the way she reads unspoken spaces."],
+            constellation: "eye",
+            name: "The Seeing Heart",
+            meaning: "Gift of true perception"
         },
         {
-            lines: [
-                "She notices things most overlook,",
-                "the little shifts, the hidden hue,",
-                "The quiet beauty in passing skies,",
-                "the kind of things that stay with you."
-            ],
-            shape: "opal",
-            title: "Opal",
-            meaning: "Each small beauty she collects—moments of light, hidden colors, precious findings that others rush past.",
-            properties: "Opal: Stone of inspiration and memory. Reveals hidden beauty, amplifies emotions, brings light to the overlooked."
+            lines: ["She notices things most overlook,", "the little shifts, the hidden hue,", "The quiet beauty in passing skies,", "the kind of things that stay with you."],
+            constellation: "scattered",
+            name: "Collected Moments",
+            meaning: "Beauty gathered and treasured"
         },
         {
-            lines: [
-                "Maybe that's why the world feels different",
-                "when she looks at it for a while—",
-                "Because even a sunset seems to learn",
-                "how to deepen just to match her style."
-            ],
-            shape: "citrine",
-            title: "Citrine",
-            meaning: "Like a deepening sunset, the world becomes more beautiful in response to her presence.",
-            properties: "Citrine: Stone of joy and abundance. Radiates warmth and positivity, enhances natural beauty."
+            lines: ["Maybe that's why the world feels different", "when she looks at it for a while—", "Because even a sunset seems to learn", "how to deepen just to match her style."],
+            constellation: "horizon",
+            name: "Deepening Beauty",
+            meaning: "Nature responding to presence"
         },
         {
-            lines: [
-                "And somewhere in all of this,",
-                "someone stands a little to the side,",
-                "Not trying to hold or change her course,",
-                "just watching with a kind of quiet pride."
-            ],
-            shape: "ruby",
-            title: "Ruby",
-            meaning: "A heart of admiration—love that doesn't need to control, pride that simply witnesses and celebrates.",
-            properties: "Ruby: Stone of passion and devotion. Inspires confidence, courage, and deep, abiding love."
+            lines: ["And somewhere in all of this,", "someone stands a little to the side,", "Not trying to hold or change her course,", "just watching with a kind of quiet pride."],
+            constellation: "heart",
+            name: "Quiet Admiration",
+            meaning: "Love that honors freedom"
         },
         {
-            lines: [
-                "Seeing how she's become all this",
-                "without needing help or a name,",
-                "Building herself piece by piece",
-                "into something steady and untamed."
-            ],
-            shape: "emerald",
-            title: "Emerald",
-            meaning: "An upward journey of growth—each layer showing how she's built herself into something magnificent and free.",
-            properties: "Emerald: Stone of growth and renewal. Symbolizes rebirth, patience, and the wisdom gained through building oneself."
+            lines: ["Seeing how she's become all this", "without needing help or a name,", "Building herself piece by piece", "into something steady and untamed."],
+            constellation: "spiral",
+            name: "The Building Journey",
+            meaning: "Self-constructed magnificence"
         },
         {
-            lines: [
-                "There's admiration that doesn't speak much,",
-                "that doesn't need to be explained,",
-                "Just a quiet kind of awe that grows",
-                "every time her presence remains."
-            ],
-            shape: "peridot",
-            title: "Peridot",
-            meaning: "Wonder that expands gently outward—awe itself made visible, growing with each moment of witnessing.",
-            properties: "Peridot: Stone of compassion and wonder. Brings lightness, reduces stress, opens the heart to new experiences."
+            lines: ["There's admiration that doesn't speak much,", "that doesn't need to be explained,", "Just a quiet kind of awe that grows", "every time her presence remains."],
+            constellation: "expanding",
+            name: "Growing Wonder",
+            meaning: "Awe deepening with witness"
         },
         {
-            lines: [
-                "And maybe that's what makes today",
-                "feel different in its own calm way—",
-                "Not because the world has changed,",
-                "but because it's her day."
-            ],
-            shape: "diamond",
-            title: "Diamond",
-            meaning: "A crown of pure light—not loud or demanding, but brilliantly radiant. Today belongs to her.",
-            properties: "Diamond: Stone of invincibility and clarity. Represents strength, purity, and eternal brilliance."
+            lines: ["And maybe that's what makes today", "feel different in its own calm way—", "Not because the world has changed,", "but because it's her day."],
+            constellation: "crown",
+            name: "Her Day",
+            meaning: "A day that belongs to her"
         },
         {
-            lines: [
-                "A day that doesn't need grand words,",
-                "or promises stretched too far ahead,",
-                "Just the simple truth that who she is",
-                "has already shaped so much instead."
-            ],
-            shape: "clear_quartz",
-            title: "Clear Quartz",
-            meaning: "Pure truth rendered in light—no embellishment needed, just the complete reality of her impact.",
-            properties: "Clear Quartz: Master healer and stone of clarity. Amplifies truth, purifies intentions, brings perfect balance."
+            lines: ["A day that doesn't need grand words,", "or promises stretched too far ahead,", "Just the simple truth that who she is", "has already shaped so much instead."],
+            constellation: "sphere",
+            name: "Simple Truth",
+            meaning: "Complete and whole as is"
         },
         {
-            lines: [
-                "So here's to the way she keeps growing—",
-                "not louder, not faster, just true,",
-                "Like a sky that keeps finding new colors",
-                "and never forgets its blue."
-            ],
-            shape: "lapis_lazuli",
-            title: "Lapis Lazuli",
-            meaning: "Like an endless sky discovering new depths—growth that's authentic, not performative, forever true to itself.",
-            properties: "Lapis Lazuli: Stone of wisdom and truth. Encourages self-awareness, honest expression, and inner vision."
+            lines: ["So here's to the way she keeps growing—", "not louder, not faster, just true,", "Like a sky that keeps finding new colors", "and never forgets its blue."],
+            constellation: "layers",
+            name: "Endless Sky",
+            meaning: "Authentic growth, always true"
         },
         {
-            lines: [
-                "Here's to everything she's carried,",
-                "everything she's yet to be,",
-                "To the quiet strength, the gentle care,",
-                "to the person she's already become so naturally."
-            ],
-            shape: "labradorite",
-            title: "Labradorite",
-            meaning: "A shimmering timeline—honoring all she's carried, celebrating who she is, holding space for all she'll become.",
-            properties: "Labradorite: Stone of transformation and magic. Bridges past, present, and future with mystical energy."
+            lines: ["Here's to everything she's carried,", "everything she's yet to be,", "To the quiet strength, the gentle care,", "to the person she's already become so naturally."],
+            constellation: "timeline",
+            name: "Past, Present, Future",
+            meaning: "Honoring all that she is"
         },
         {
-            lines: [
-                "And if days keep moving forward like this,",
-                "with all that she holds and creates,",
-                "Then the world's only getting better",
-                "with every step she takes."
-            ],
-            shape: "aventurine",
-            title: "Green Aventurine",
-            meaning: "Each step forward leaves trails of light—opportunity and growth following in her wake.",
-            properties: "Green Aventurine: Stone of opportunity and luck. Attracts prosperity, promotes growth, manifests possibilities."
+            lines: ["And if days keep moving forward like this,", "with all that she holds and creates,", "Then the world's only getting better", "with every step she takes."],
+            constellation: "path",
+            name: "The Path Forward",
+            meaning: "Each step improving the world"
         },
         {
-            lines: [
-                "Because some people don't just pass through life—",
-                "they change how it's seen, how it's felt, how it stays…",
-                "…and today just happens to be hers. 💜"
-            ],
-            shape: "alexandrite",
-            title: "Alexandrite",
-            meaning: "A rare and magical universe—she doesn't just exist in the world, she fundamentally transforms it.",
-            properties: "Alexandrite: Rarest stone of transformation. Changes with light, symbolizes magic, adaptability, and the extraordinary."
+            lines: ["Because some people don't just pass through life—", "they change how it's seen, how it's felt, how it stays…", "…and today just happens to be hers. 💜"],
+            constellation: "universe",
+            name: "Her Universe",
+            meaning: "Fundamentally transforming existence"
         }
     ];
 
     // Three.js Setup
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
-    scene.fog = new THREE.FogExp2(0x000000, 0.0015);
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 35;
+    camera.position.z = 40;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     document.body.insertBefore(renderer.domElement, document.body.firstChild);
 
-    // Particles
-    const PARTICLE_COUNT = 15000;
-    const geometry = new THREE.BufferGeometry();
+    // Particles and Lines
+    const PARTICLE_COUNT = 200;
+    const particleGeometry = new THREE.BufferGeometry();
     const positions = new Float32Array(PARTICLE_COUNT * 3);
     const colors = new Float32Array(PARTICLE_COUNT * 3);
     const targetPositions = new Float32Array(PARTICLE_COUNT * 3);
 
-    // Initialize
     for (let i = 0; i < PARTICLE_COUNT * 3; i++) {
-        positions[i] = (Math.random() - 0.5) * 100;
+        positions[i] = (Math.random() - 0.5) * 80;
         colors[i] = 1.0;
         targetPositions[i] = positions[i];
     }
 
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-    const getSprite = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 32; canvas.height = 32;
-        const context = canvas.getContext('2d');
-        const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
-        gradient.addColorStop(0, 'rgba(255, 215, 180, 1)');
-        gradient.addColorStop(0.3, 'rgba(255, 184, 140, 0.8)');
-        gradient.addColorStop(0.6, 'rgba(255, 140, 100, 0.3)');
-        gradient.addColorStop(1, 'rgba(0,0,0,0)');
-        context.fillStyle = gradient;
-        context.fillRect(0, 0, 32, 32);
-        const texture = new THREE.Texture(canvas);
-        texture.needsUpdate = true;
-        return texture;
-    };
-
-    const material = new THREE.PointsMaterial({
-        size: 0.5,
+    const particleMaterial = new THREE.PointsMaterial({
+        size: 0.8,
         vertexColors: true,
-        map: getSprite(),
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-        transparent: true
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending
     });
 
-    const particles = new THREE.Points(geometry, material);
+    const particles = new THREE.Points(particleGeometry, particleMaterial);
     scene.add(particles);
 
-    // Add ambient stars
-    const starGeometry = new THREE.BufferGeometry();
-    const starPositions = new Float32Array(2000 * 3);
-    for (let i = 0; i < 2000 * 3; i++) {
-        starPositions[i] = (Math.random() - 0.5) * 200;
-    }
-    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-    const starMaterial = new THREE.PointsMaterial({
-        size: 0.3,
-        color: 0xffd7b4,
-        transparent: true,
-        opacity: 0.4
-    });
-    const stars = new THREE.Points(starGeometry, starMaterial);
-    scene.add(stars);
+    // Lines for constellation connections
+    const lineGeometry = new THREE.BufferGeometry();
+    const linePositions = new Float32Array(PARTICLE_COUNT * 6); // Max lines
+    lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
 
-        // Realistic Crystal Cluster Generator
-    function createCrystalCluster(crystalCount, baseRadius, height, color) {
+    const lineMaterial = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.2,
+        blending: THREE.AdditiveBlending
+    });
+
+    const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+    scene.add(lines);
+
+    // Constellation patterns generator
+    function getConstellationPattern(type, textWidth = 30, textHeight = 15) {
         const points = [];
-        const crystals = [];
+        const connections = [];
         
-        // Generate random crystal positions
-        for (let c = 0; c < crystalCount; c++) {
-            const angle = (c / crystalCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.8;
-            const radius = baseRadius * (0.2 + Math.random() * 0.8);
-            crystals.push({
-                x: Math.cos(angle) * radius,
-                z: Math.sin(angle) * radius,
-                height: height * (0.5 + Math.random() * 1.0),
-                rotation: Math.random() * Math.PI * 2,
-                width: 0.8 + Math.random() * 1.2
-            });
-        }
-        
-        // Generate particles for each crystal pillar
-        crystals.forEach(crystal => {
-            const sides = 6; // Hexagonal
-            const layers = 30;
-            
-            for (let layer = 0; layer < layers; layer++) {
-                const t = layer / layers;
-                const y = -height/2 + t * crystal.height;
-                const scale = (1 - t * 0.7) * crystal.width;
+        switch(type) {
+            case 'circle':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const angle = (i / PARTICLE_COUNT) * Math.PI * 2;
+                    const radius = 22 + Math.random() * 3;
+                    points.push({
+                        x: Math.cos(angle) * radius,
+                        y: Math.sin(angle) * radius,
+                        z: (Math.random() - 0.5) * 5
+                    });
+                }
+                break;
                 
-                for (let side = 0; side < sides; side++) {
-                    const steps = 10;
-                    for (let step = 0; step < steps; step++) {
-                        const angle1 = (side / sides) * Math.PI * 2 + crystal.rotation;
-                        const angle2 = ((side + 1) / sides) * Math.PI * 2 + crystal.rotation;
-                        const edgeT = step / steps;
-                        
-                        const x1 = Math.cos(angle1) * scale;
-                        const z1 = Math.sin(angle1) * scale;
-                        const x2 = Math.cos(angle2) * scale;
-                        const z2 = Math.sin(angle2) * scale;
-                        
-                        const x = crystal.x + x1 + (x2 - x1) * edgeT;
-                        const z = crystal.z + z1 + (z2 - z1) * edgeT;
-                        
-                        // Facet brightness
-                        const brightness = 0.6 + Math.random() * 0.4 + (1 - t) * 0.3;
-                        
+            case 'star':
+                const starPoints = 8;
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const pointIndex = Math.floor((i / PARTICLE_COUNT) * starPoints);
+                    const angle = (pointIndex / starPoints) * Math.PI * 2;
+                    const isOuter = i % 2 === 0;
+                    const radius = isOuter ? 25 : 15;
+                    const spread = 3;
+                    points.push({
+                        x: Math.cos(angle) * radius + (Math.random() - 0.5) * spread,
+                        y: Math.sin(angle) * radius + (Math.random() - 0.5) * spread,
+                        z: (Math.random() - 0.5) * 5
+                    });
+                }
+                break;
+                
+            case 'flowing':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const t = i / PARTICLE_COUNT;
+                    const angle = t * Math.PI * 4;
+                    const radius = 20;
+                    points.push({
+                        x: Math.cos(angle) * radius + Math.sin(t * Math.PI * 6) * 5,
+                        y: Math.sin(angle) * radius + Math.cos(t * Math.PI * 6) * 5,
+                        z: Math.sin(t * Math.PI * 3) * 3
+                    });
+                }
+                break;
+                
+            case 'anchor':
+                // Rectangle frame
+                const corners = 4;
+                const perSide = Math.floor(PARTICLE_COUNT / 4);
+                for (let side = 0; side < 4; side++) {
+                    for (let i = 0; i < perSide; i++) {
+                        const t = i / perSide;
+                        let x, y;
+                        if (side === 0) { x = -textWidth + t * textWidth * 2; y = textHeight; }
+                        else if (side === 1) { x = textWidth; y = textHeight - t * textHeight * 2; }
+                        else if (side === 2) { x = textWidth - t * textWidth * 2; y = -textHeight; }
+                        else { x = -textWidth; y = -textHeight + t * textHeight * 2; }
                         points.push({
-                            x: x + (Math.random() - 0.5) * 0.15,
-                            y: y + (Math.random() - 0.5) * 0.15,
-                            z: z + (Math.random() - 0.5) * 0.15,
-                            r: color.r * brightness,
-                            g: color.g * brightness,
-                            b: color.b * brightness
+                            x: x + (Math.random() - 0.5) * 2,
+                            y: y + (Math.random() - 0.5) * 2,
+                            z: (Math.random() - 0.5) * 4
                         });
                     }
                 }
-            }
-        });
-        
-        return points;
-    }
-
-    function getPointOnMoonstone(i) {
-        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
-        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
-        const r = 8 + Math.sin(theta * 5) * 0.5;
-        const brightness = 0.85 + Math.random() * 0.15;
-        return {
-            x: r * Math.cos(theta) * Math.sin(phi),
-            y: r * Math.sin(theta) * Math.sin(phi),
-            z: r * Math.cos(phi),
-            r: 0.95 * brightness, g: 0.93 * brightness, b: 1.0 * brightness
-        };
-    }
-
-    function getPointOnStarSapphire(i) {
-        const points = createCrystalCluster(7, 3, 14, {r: 0.1, g: 0.2, b: 1.0});
-        return points[i % points.length];
-    }
-
-    function getPointOnAquamarine(i) {
-        const points = createCrystalCluster(6, 3, 16, {r: 0.3, g: 0.9, b: 1.0});
-        return points[i % points.length];
-    }
-
-    function getPointOnOnyx(i) {
-        const angle = (i / PARTICLE_COUNT) * Math.PI * 2 * 8;
-        const height = ((i / PARTICLE_COUNT) - 0.5) * 15;
-        const radius = 6 * (1 - Math.abs(height / 15) * 0.5);
-        const brightness = 0.1 + Math.abs(Math.sin(height * 0.5)) * 0.15;
-        return {x: radius * Math.cos(angle), y: height, z: radius * Math.sin(angle), r: brightness, g: brightness, b: brightness};
-    }
-
-    function getPointOnAmber(i) {
-        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
-        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
-        const r = 7 + Math.sin(theta * 3) * 1.5;
-        const warmth = 0.8 + Math.random() * 0.2;
-        return {
-            x: r * Math.cos(theta) * Math.sin(phi),
-            y: r * Math.sin(theta) * Math.sin(phi),
-            z: r * Math.cos(phi),
-            r: 1.0 * warmth, g: 0.6 * warmth, b: 0.1 * warmth
-        };
-    }
-
-    function getPointOnRoseQuartz(i) {
-        const points = createCrystalCluster(5, 4, 12, {r: 1.0, g: 0.7, b: 0.8});
-        return points[i % points.length];
-    }
-
-    function getPointOnAmethyst(i) {
-        const points = createCrystalCluster(9, 4, 15, {r: 0.7, g: 0.2, b: 1.0});
-        return points[i % points.length];
-    }
-
-    function getPointOnOpal(i) {
-        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
-        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
-        const r = 7;
-        const colorShift = Math.sin(theta * 3 + phi * 2);
-        return {
-            x: r * Math.cos(theta) * Math.sin(phi),
-            y: r * Math.sin(theta) * Math.sin(phi),
-            z: r * Math.cos(phi),
-            r: 0.9 + colorShift * 0.1, g: 0.7 + Math.cos(theta * 2) * 0.3, b: 0.8 + Math.sin(phi * 3) * 0.2
-        };
-    }
-
-    function getPointOnCitrine(i) {
-        const points = createCrystalCluster(6, 3.5, 15, {r: 1.0, g: 0.8, b: 0.2});
-        return points[i % points.length];
-    }
-
-    function getPointOnRuby(i) {
-        const points = createCrystalCluster(7, 3, 13, {r: 1.0, g: 0.1, b: 0.2});
-        return points[i % points.length];
-    }
-
-    function getPointOnEmerald(i) {
-        const points = createCrystalCluster(8, 3.5, 16, {r: 0.1, g: 1.0, b: 0.3});
-        return points[i % points.length];
-    }
-
-    function getPointOnPeridot(i) {
-        const points = createCrystalCluster(7, 4, 14, {r: 0.6, g: 1.0, b: 0.2});
-        return points[i % points.length];
-    }
-
-    function getPointOnDiamond(i) {
-        const points = createCrystalCluster(8, 3, 12, {r: 1.0, g: 1.0, b: 1.0});
-        return points[i % points.length];
-    }
-
-    function getPointOnClearQuartz(i) {
-        const points = createCrystalCluster(10, 4, 18, {r: 0.98, g: 0.98, b: 1.0});
-        return points[i % points.length];
-    }
-
-    function getPointOnLapisLazuli(i) {
-        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
-        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
-        const r = 8;
-        const isGold = Math.random() > 0.9;
-        return {
-            x: r * Math.cos(theta) * Math.sin(phi),
-            y: r * Math.sin(theta) * Math.sin(phi),
-            z: r * Math.cos(phi),
-            r: isGold ? 0.9 : 0.1, g: isGold ? 0.7 : 0.2, b: isGold ? 0.3 : 1.0
-        };
-    }
-
-    function getPointOnLabradorite(i) {
-        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
-        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
-        const r = 7.5;
-        const flash = Math.sin(theta * 5 + phi * 3) > 0.7;
-        const hue = Math.sin(theta * 2);
-        let r_val, g_val, b_val;
-        if (flash) {
-            if (hue > 0.5) { r_val = 0.2; g_val = 0.4; b_val = 1.0; }
-            else if (hue > 0) { r_val = 0.2; g_val = 1.0; b_val = 0.6; }
-            else { r_val = 1.0; g_val = 0.8; b_val = 0.3; }
-        } else {
-            const gray = 0.3 + Math.random() * 0.1;
-            r_val = gray; g_val = gray; b_val = gray * 1.1;
+                break;
+                
+            case 'hourglass':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const t = i / PARTICLE_COUNT;
+                    const angle = t * Math.PI * 2 * 3;
+                    const height = (t - 0.5) * 30;
+                    const radius = 10 * (1 - Math.abs(height) / 20);
+                    points.push({
+                        x: Math.cos(angle) * radius,
+                        y: height,
+                        z: Math.sin(angle) * radius
+                    });
+                }
+                break;
+                
+            case 'balanced':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const angle = (i / PARTICLE_COUNT) * Math.PI * 2;
+                    const r = 18;
+                    const side = Math.sin(angle) > 0 ? 1 : -1;
+                    const offset = side * Math.cos(angle * 2) * 5;
+                    points.push({
+                        x: r * Math.cos(angle) + offset,
+                        y: r * Math.sin(angle),
+                        z: (Math.random() - 0.5) * 3
+                    });
+                }
+                break;
+                
+            case 'eye':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const angle = (i / PARTICLE_COUNT) * Math.PI * 2;
+                    const radius = 20 + Math.cos(angle * 2) * 5;
+                    points.push({
+                        x: Math.cos(angle) * radius * 1.5,
+                        y: Math.sin(angle) * radius,
+                        z: (Math.random() - 0.5) * 4
+                    });
+                }
+                break;
+                
+            case 'scattered':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 15 + Math.random() * 15;
+                    points.push({
+                        x: Math.cos(angle) * radius,
+                        y: Math.sin(angle) * radius + (Math.random() - 0.5) * 10,
+                        z: (Math.random() - 0.5) * 10
+                    });
+                }
+                break;
+                
+            case 'horizon':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const x = ((i % 50) - 25) * 1.5;
+                    const y = -10 + Math.exp(-Math.abs(x) / 10) * 15;
+                    const z = (Math.floor(i / 50) - 2) * 3;
+                    points.push({ x, y, z });
+                }
+                break;
+                
+            case 'heart':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const t = (i / PARTICLE_COUNT) * Math.PI * 2;
+                    const scale = 0.8;
+                    const x = 16 * Math.pow(Math.sin(t), 3) * scale;
+                    const y = (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) * scale;
+                    points.push({ x, y, z: (Math.random() - 0.5) * 4 });
+                }
+                break;
+                
+            case 'spiral':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const t = (i / PARTICLE_COUNT) * Math.PI * 6;
+                    const radius = t * 1.5;
+                    points.push({
+                        x: Math.cos(t) * radius,
+                        y: t * 2 - 15,
+                        z: Math.sin(t) * radius
+                    });
+                }
+                break;
+                
+            case 'expanding':
+                const rings = 5;
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const ring = Math.floor((i / PARTICLE_COUNT) * rings);
+                    const angle = (i / (PARTICLE_COUNT / rings)) * Math.PI * 2;
+                    const radius = 10 + ring * 4;
+                    points.push({
+                        x: Math.cos(angle) * radius,
+                        y: Math.sin(angle) * radius,
+                        z: (Math.random() - 0.5) * (ring + 1)
+                    });
+                }
+                break;
+                
+            case 'crown':
+                const peaks = 8;
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const peak = Math.floor((i / PARTICLE_COUNT) * peaks);
+                    const t = (i % (PARTICLE_COUNT / peaks)) / (PARTICLE_COUNT / peaks);
+                    const angle = (peak / peaks) * Math.PI * 2;
+                    const radius = 18 * (1 - t);
+                    const height = t * 15;
+                    points.push({
+                        x: Math.cos(angle) * radius,
+                        y: height - 7,
+                        z: Math.sin(angle) * radius
+                    });
+                }
+                break;
+                
+            case 'sphere':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
+                    const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
+                    const r = 20;
+                    points.push({
+                        x: r * Math.cos(theta) * Math.sin(phi),
+                        y: r * Math.sin(theta) * Math.sin(phi),
+                        z: r * Math.cos(phi)
+                    });
+                }
+                break;
+                
+            case 'layers':
+                const layerCount = 7;
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const layer = Math.floor((i / PARTICLE_COUNT) * layerCount);
+                    const x = ((i % 30) - 15) * 2;
+                    const y = layer * 5 - 15;
+                    const z = (Math.floor((i % (PARTICLE_COUNT / layerCount)) / 30) - 2) * 3;
+                    points.push({ x, y, z });
+                }
+                break;
+                
+            case 'timeline':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const section = Math.floor((i / PARTICLE_COUNT) * 3);
+                    const t = (i % (PARTICLE_COUNT / 3)) / (PARTICLE_COUNT / 3);
+                    const x = -20 + section * 20;
+                    const y = Math.sin(t * Math.PI * 4) * 5;
+                    const z = (Math.random() - 0.5) * 5;
+                    points.push({ x: x + (Math.random() - 0.5) * 3, y, z });
+                }
+                break;
+                
+            case 'path':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const step = Math.floor((i / PARTICLE_COUNT) * 10);
+                    const t = (i % (PARTICLE_COUNT / 10)) / (PARTICLE_COUNT / 10);
+                    const x = step * 4 - 20;
+                    const y = -8;
+                    const z = ((step % 2) * 4 - 2) + Math.sin(t * Math.PI * 2) * 2;
+                    points.push({ x, y, z });
+                }
+                break;
+                
+            case 'universe':
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
+                    const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
+                    const r = 10 + Math.random() * 15;
+                    points.push({
+                        x: r * Math.cos(theta) * Math.sin(phi),
+                        y: r * Math.sin(theta) * Math.sin(phi),
+                        z: r * Math.cos(phi)
+                    });
+                }
+                break;
+                
+            default:
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    points.push({
+                        x: (Math.random() - 0.5) * 60,
+                        y: (Math.random() - 0.5) * 40,
+                        z: (Math.random() - 0.5) * 20
+                    });
+                }
         }
-        return {x: r * Math.cos(theta) * Math.sin(phi), y: r * Math.sin(theta) * Math.sin(phi), z: r * Math.cos(phi), r: r_val, g: g_val, b: b_val};
+        
+        return { points, connections };
     }
 
-    function getPointOnAventurine(i) {
-        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
-        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
-        const r = 7;
-        const sparkle = Math.random() > 0.85 ? 1.3 : 0.9;
-        return {
-            x: r * Math.cos(theta) * Math.sin(phi),
-            y: r * Math.sin(theta) * Math.sin(phi),
-            z: r * Math.cos(phi),
-            r: 0.2 * sparkle, g: 0.9 * sparkle, b: 0.3 * sparkle
-        };
-    }
-
-    function getPointOnAlexandrite(i) {
-        const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
-        const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
-        const r = 8;
-        const changeT = (Math.sin(theta * 2) + 1) / 2;
-        const sparkle = 0.85 + Math.random() * 0.15;
-        return {
-            x: r * Math.cos(theta) * Math.sin(phi),
-            y: r * Math.sin(theta) * Math.sin(phi),
-            z: r * Math.cos(phi),
-            r: (0.4 + changeT * 0.6) * sparkle,
-            g: (0.6 - changeT * 0.4) * sparkle,
-            b: (0.8 + changeT * 0.2) * sparkle
-        };
-    }
-
-
-    function setTargetShape(shapeName) {
+    function setConstellationPattern(type) {
+        const { points, connections } = getConstellationPattern(type);
         const colorAttr = particles.geometry.attributes.color;
+        
         for (let i = 0; i < PARTICLE_COUNT; i++) {
-            let p;
-            switch(shapeName) {
-                case 'moonstone': p = getPointOnMoonstone(i); break;
-                case 'star_sapphire': p = getPointOnStarSapphire(i); break;
-                case 'aquamarine': p = getPointOnAquamarine(i); break;
-                case 'onyx': p = getPointOnOnyx(i); break;
-                case 'amber': p = getPointOnAmber(i); break;
-                case 'rose_quartz': p = getPointOnRoseQuartz(i); break;
-                case 'amethyst': p = getPointOnAmethyst(i); break;
-                case 'opal': p = getPointOnOpal(i); break;
-                case 'citrine': p = getPointOnCitrine(i); break;
-                case 'ruby': p = getPointOnRuby(i); break;
-                case 'emerald': p = getPointOnEmerald(i); break;
-                case 'peridot': p = getPointOnPeridot(i); break;
-                case 'diamond': p = getPointOnDiamond(i); break;
-                case 'clear_quartz': p = getPointOnClearQuartz(i); break;
-                case 'lapis_lazuli': p = getPointOnLapisLazuli(i); break;
-                case 'labradorite': p = getPointOnLabradorite(i); break;
-                case 'aventurine': p = getPointOnAventurine(i); break;
-                case 'alexandrite': p = getPointOnAlexandrite(i); break;
-                default: p = getPointOnMoonstone(i);
-            }
-
+            const p = points[i] || { x: 0, y: 0, z: 0 };
             targetPositions[i * 3] = p.x;
             targetPositions[i * 3 + 1] = p.y;
             targetPositions[i * 3 + 2] = p.z;
-            colorAttr.setXYZ(i, p.r, p.g, p.b);
+            
+            // White particles
+            colorAttr.setXYZ(i, 1.0, 1.0, 1.0);
         }
         colorAttr.needsUpdate = true;
+        
+        // Update constellation lines
+        updateConstellationLines();
+    }
+
+    function updateConstellationLines() {
+        const linePos = lines.geometry.attributes.position;
+        let lineIndex = 0;
+        const maxDistance = 8;
+        
+        // Connect nearby particles
+        for (let i = 0; i < PARTICLE_COUNT && lineIndex < PARTICLE_COUNT * 6; i++) {
+            const x1 = targetPositions[i * 3];
+            const y1 = targetPositions[i * 3 + 1];
+            const z1 = targetPositions[i * 3 + 2];
+            
+            for (let j = i + 1; j < PARTICLE_COUNT && lineIndex < PARTICLE_COUNT * 6; j++) {
+                const x2 = targetPositions[j * 3];
+                const y2 = targetPositions[j * 3 + 1];
+                const z2 = targetPositions[j * 3 + 2];
+                
+                const dist = Math.sqrt(
+                    Math.pow(x2 - x1, 2) +
+                    Math.pow(y2 - y1, 2) +
+                    Math.pow(z2 - z1, 2)
+                );
+                
+                if (dist < maxDistance) {
+                    linePos.setXYZ(lineIndex, x1, y1, z1);
+                    linePos.setXYZ(lineIndex + 1, x2, y2, z2);
+                    lineIndex += 2;
+                }
+            }
+        }
+        
+        // Fill remaining with zeros
+        for (let i = lineIndex; i < PARTICLE_COUNT * 6; i++) {
+            linePos.setXYZ(i, 0, 0, 0);
+        }
+        
+        linePos.needsUpdate = true;
     }
 
     // State
     let currentStanza = 0;
-    let handX = 0, handY = 0, handZ = 0;
+    let handX = 0, handY = 0;
     let isPinching = false, isFist = false;
-    let lastSwipeTime = 0;
-    let lastHandX = 0;
-    let isPaused = false;
+    let lastSwipeTime = 0, lastHandX = 0;
 
-    // UI Elements
+    // UI
     const poemContainer = document.getElementById('poem-container');
-    const shapeInfo = document.getElementById('shape-info');
-    const shapeTitle = document.getElementById('shape-title');
-    const shapeMeaning = document.getElementById('shape-meaning');
-    const gemstoneProperties = document.getElementById('gemstone-properties');
+    const constellationName = document.getElementById('constellation-name');
+    const constellationMeaning = document.getElementById('constellation-meaning');
     const progress = document.getElementById('progress');
-    const controlsHint = document.getElementById('controls-hint');
 
     function displayStanza(index) {
         if (index < 0 || index >= poemData.length) return;
@@ -884,7 +697,6 @@
         currentStanza = index;
         const data = poemData[index];
         
-        // Update poem with fade transition
         poemContainer.style.opacity = '0';
         setTimeout(() => {
             poemContainer.innerHTML = '';
@@ -892,21 +704,16 @@
                 const lineDiv = document.createElement('div');
                 lineDiv.className = 'stanza-line';
                 lineDiv.textContent = line;
-                lineDiv.style.animationDelay = `${i * 0.15}s`;
+                lineDiv.style.setProperty('--line-index', i);
                 poemContainer.appendChild(lineDiv);
             });
             poemContainer.style.opacity = '1';
-        }, 400);
+        }, 300);
         
-        // Update shape
-        setTargetShape(data.shape);
+        setConstellationPattern(data.constellation);
         
-        // Update info
-        shapeTitle.textContent = data.title;
-        shapeMeaning.textContent = data.meaning;
-        gemstoneProperties.textContent = data.properties;
-        
-        // Update progress
+        constellationName.textContent = data.name;
+        constellationMeaning.textContent = data.meaning;
         progress.textContent = `${index + 1} / ${poemData.length}`;
     }
 
@@ -916,13 +723,9 @@
     function onResults(results) {
         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
             const landmarks = results.multiHandLandmarks[0];
-            
-            // Get hand position
             const newHandX = (0.5 - landmarks[9].x) * 2;
             handY = (0.5 - landmarks[9].y) * 2;
-            handZ = landmarks[9].z;
             
-            // Detect swipe
             const swipeDelta = newHandX - lastHandX;
             if (Math.abs(swipeDelta) > 0.15 && Date.now() - lastSwipeTime > 800) {
                 if (swipeDelta > 0 && currentStanza > 0) {
@@ -936,19 +739,10 @@
             lastHandX = newHandX;
             handX = newHandX;
             
-            // Detect pinch
-            const dist = Math.hypot(
-                landmarks[8].x - landmarks[4].x,
-                landmarks[8].y - landmarks[4].y,
-                landmarks[8].z - landmarks[4].z
-            );
+            const dist = Math.hypot(landmarks[8].x - landmarks[4].x, landmarks[8].y - landmarks[4].y, landmarks[8].z - landmarks[4].z);
             isPinching = dist < 0.05;
             
-            // Detect fist
-            const palmDist = Math.hypot(
-                landmarks[8].x - landmarks[0].x,
-                landmarks[8].y - landmarks[0].y
-            );
+            const palmDist = Math.hypot(landmarks[8].x - landmarks[0].x, landmarks[8].y - landmarks[0].y);
             isFist = palmDist < 0.25;
         }
     }
@@ -965,18 +759,15 @@
     hands.onResults(onResults);
 
     const cameraUtils = new Camera(videoElement, {
-        onFrame: async () => {
-            await hands.send({ image: videoElement });
-        },
+        onFrame: async () => { await hands.send({ image: videoElement }); },
         width: 320,
         height: 240
     });
 
-    // Initialize immediately
     displayStanza(0);
     cameraUtils.start();
 
-    // Animation loop
+    // Animation
     const clock = new THREE.Clock();
     function animate() {
         requestAnimationFrame(animate);
@@ -985,51 +776,37 @@
         const posAttr = particles.geometry.attributes.position;
         const curPos = posAttr.array;
 
-        // Smooth rotation based on hand
-        particles.rotation.x += ((handY * 0.5) - particles.rotation.x) * 0.08;
-        particles.rotation.y += ((handX * 0.5) - particles.rotation.y) * 0.08;
-        particles.rotation.z += 0.0005;
+        particles.rotation.x += ((handY * 0.3) - particles.rotation.x) * 0.05;
+        particles.rotation.y += ((handX * 0.3) - particles.rotation.y) * 0.05;
+        particles.rotation.z += 0.0003;
 
-        // Expansion based on hand height and fist
-        let exp = 1.0;
-        if (isFist) {
-            exp = 0.3;
-        } else if (isPinching) {
-            exp = 1.5;
-        } else {
-            exp = 1.0 + (1 - Math.abs(handY)) * 0.3;
-        }
+        const exp = isFist ? 0.4 : (isPinching ? 1.2 : 1.0);
+        const speed = isFist ? 0.12 : 0.03;
 
-        // Update particles
-        const speed = isPinching ? 0.02 : (isFist ? 0.15 : 0.04);
         for (let i = 0; i < PARTICLE_COUNT; i++) {
             const idx = i * 3;
             const tx = targetPositions[idx] * exp;
             const ty = targetPositions[idx + 1] * exp;
             const tz = targetPositions[idx + 2] * exp;
-            const noise = Math.sin(time * 0.5 + i * 0.01) * 0.03;
+            const noise = Math.sin(time * 0.5 + i * 0.1) * 0.02;
 
             curPos[idx] += (tx - curPos[idx]) * speed + noise;
             curPos[idx + 1] += (ty - curPos[idx + 1]) * speed + noise;
             curPos[idx + 2] += (tz - curPos[idx + 2]) * speed + noise;
         }
         posAttr.needsUpdate = true;
-
-        // Rotate stars slowly
-        stars.rotation.y += 0.0001;
+        
+        updateConstellationLines();
 
         renderer.render(scene, camera);
     }
 
-    // Handle resize
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Initialize first shape
-    setTargetShape('moonstone');
     animate();
 </script>
 </body>
