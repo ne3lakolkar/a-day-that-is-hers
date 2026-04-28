@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Day That's Yours ✨</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Outfit:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body { 
             margin: 0; 
             overflow: hidden; 
-            background: #000000;
-            font-family: 'Outfit', sans-serif; 
-            color: #fff;
+            background: radial-gradient(ellipse at center, #1a0b2e 0%, #0a0614 50%, #000000 100%);
+            font-family: 'Cormorant Garamond', serif;
         }
         
         canvas { 
@@ -23,7 +22,6 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
         }
         
         #poem-container {
@@ -31,96 +29,85 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            max-width: 800px;
+            max-width: 850px;
             text-align: center;
             z-index: 10;
             pointer-events: none;
-            padding: 60px;
+            padding: 80px 60px;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%);
         }
         
         .stanza {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2.2rem;
-            line-height: 2.8;
-            font-weight: 400;
+            font-size: 2.4rem;
+            line-height: 3;
+            font-weight: 300;
             color: #ffffff;
             text-shadow: 
-                0 0 50px rgba(255, 255, 255, 0.9),
-                0 0 100px rgba(255, 255, 255, 0.5),
-                0 4px 12px rgba(0, 0, 0, 1);
-            margin-bottom: 1.5rem;
-            letter-spacing: 1.2px;
+                0 0 60px rgba(200, 220, 255, 1),
+                0 0 120px rgba(150, 180, 255, 0.8),
+                0 4px 20px rgba(0, 0, 0, 1);
+            letter-spacing: 1.5px;
             opacity: 0;
-            transform: translateY(10px);
-            animation: fadeIn 1s ease forwards;
+            animation: fadeIn 1.2s ease forwards;
         }
         
         @keyframes fadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            to { opacity: 1; }
         }
         
         .stanza-line {
-            animation-delay: calc(var(--line-index) * 0.15s);
+            animation-delay: calc(var(--line-index) * 0.2s);
         }
         
         #video-container {
             position: fixed;
-            bottom: 20px;
+            bottom: 25px;
             left: 50%;
             transform: translateX(-50%) scaleX(-1);
-            width: 160px;
-            height: 120px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
+            width: 140px;
+            height: 105px;
+            border: 1px solid rgba(150, 180, 255, 0.3);
+            border-radius: 10px;
             z-index: 100;
-            opacity: 0.5;
+            opacity: 0.4;
             overflow: hidden;
-            backdrop-filter: blur(10px);
-            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+            background: rgba(10, 6, 20, 0.5);
             transition: opacity 0.3s ease;
         }
         
-        #video-container:hover {
-            opacity: 0.9;
-        }
+        #video-container:hover { opacity: 0.8; }
+        video { width: 100%; height: 100%; object-fit: cover; }
         
-        video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-        }
-        
-        #info-panel {
+        #info {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            max-width: 300px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            padding: 12px 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(10, 6, 20, 0.7);
+            backdrop-filter: blur(15px);
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(150, 180, 255, 0.2);
             z-index: 100;
-            opacity: 0.6;
+            opacity: 0.5;
             transition: opacity 0.3s ease;
-            font-size: 0.75rem;
-            line-height: 1.5;
-            color: rgba(255, 255, 255, 0.8);
+            max-width: 280px;
         }
         
-        #info-panel:hover {
-            opacity: 1;
-        }
+        #info:hover { opacity: 1; }
         
         #constellation-name {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 6px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #c8dcff;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+        
+        #constellation-desc {
+            font-size: 0.75rem;
+            color: rgba(200, 220, 255, 0.6);
+            line-height: 1.4;
         }
         
         #progress {
@@ -128,577 +115,544 @@
             top: 20px;
             right: 20px;
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(200, 220, 255, 0.5);
             z-index: 100;
-            font-weight: 300;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(10, 6, 20, 0.5);
             padding: 8px 16px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(150, 180, 255, 0.15);
         }
         
         #controls {
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            padding: 10px 14px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(10, 6, 20, 0.7);
+            backdrop-filter: blur(15px);
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(150, 180, 255, 0.2);
             font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(200, 220, 255, 0.6);
             z-index: 100;
-            opacity: 0.6;
+            opacity: 0.5;
             transition: opacity 0.3s ease;
         }
         
-        #controls:hover {
-            opacity: 1;
-        }
-        
-        .control-line {
-            margin: 4px 0;
-        }
-        
-        @media (max-width: 768px) {
-            #poem-container {
-                max-width: 90%;
-                padding: 40px 20px;
-            }
-            
-            .stanza {
-                font-size: 1.5rem;
-                line-height: 2.4;
-            }
-            
-            #video-container {
-                width: 120px;
-                height: 90px;
-            }
-        }
+        #controls:hover { opacity: 1; }
+        .control-line { margin: 4px 0; }
     </style>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 </head>
 <body>
-
+    <canvas id="canvas"></canvas>
     <div id="poem-container"></div>
-    
-    <div id="info-panel">
+    <div id="info">
         <div id="constellation-name"></div>
-        <div id="constellation-meaning"></div>
+        <div id="constellation-desc"></div>
     </div>
-    
     <div id="progress"></div>
-    
     <div id="controls">
-        <div class="control-line">👈👉 Swipe to navigate</div>
-        <div class="control-line">✋✊ Expand/Collapse</div>
+        <div class="control-line">👈👉 Swipe hand to navigate</div>
+        <div class="control-line">✋✊ Expand/collapse universe</div>
     </div>
-
     <div id="video-container">
         <video class="input_video"></video>
     </div>
 
-<script>
-    const poemData = [
-        {
-            lines: ["Some people arrive into a day", "and nothing really changes shape,", "The hours pass the way they do,", "the sky remains the same escape."],
-            constellation: "circle",
-            name: "The Endless Circle",
-            meaning: "Days revolving in gentle cycles"
-        },
-        {
-            lines: ["But then there are days like this—", "the kind that feel a little more aware,", "As if the world remembers softly", "that someone like her is here."],
-            constellation: "star",
-            name: "The Awakening Star",
-            meaning: "Awareness blooming into connection"
-        },
-        {
-            lines: ["Not in a way that asks for noise,", "or celebration loud and bright,", "But in the way small things align", "a little better in her light."],
-            constellation: "flowing",
-            name: "Gentle Alignment",
-            meaning: "Quiet grace bringing harmony"
-        },
-        {
-            lines: ["She doesn't try to be remarkable,", "doesn't gather attention or claim,", "Yet somehow everything around her", "feels steadier just the same."],
-            constellation: "anchor",
-            name: "The Quiet Anchor",
-            meaning: "Steadiness without seeking"
-        },
-        {
-            lines: ["The way she carries every moment,", "as if time trusts her with its weight,", "Not rushing through, not falling behind,", "just meeting each piece at its state."],
-            constellation: "hourglass",
-            name: "Time's Keeper",
-            meaning: "Perfect presence in each moment"
-        },
-        {
-            lines: ["There's something rare in how she moves,", "like calm stitched carefully with grace,", "Like even the busiest days she holds", "can't quite disturb her inner pace."],
-            constellation: "balanced",
-            name: "Grace & Strength",
-            meaning: "Calm and power in harmony"
-        },
-        {
-            lines: ["And still, within all of that strength,", "there's softness she never misplaces—", "In the way she listens, understands,", "in the way she reads unspoken spaces."],
-            constellation: "eye",
-            name: "The Seeing Heart",
-            meaning: "Gift of true perception"
-        },
-        {
-            lines: ["She notices things most overlook,", "the little shifts, the hidden hue,", "The quiet beauty in passing skies,", "the kind of things that stay with you."],
-            constellation: "scattered",
-            name: "Collected Moments",
-            meaning: "Beauty gathered and treasured"
-        },
-        {
-            lines: ["Maybe that's why the world feels different", "when she looks at it for a while—", "Because even a sunset seems to learn", "how to deepen just to match her style."],
-            constellation: "horizon",
-            name: "Deepening Beauty",
-            meaning: "Nature responding to presence"
-        },
-        {
-            lines: ["And somewhere in all of this,", "someone stands a little to the side,", "Not trying to hold or change her course,", "just watching with a kind of quiet pride."],
-            constellation: "heart",
-            name: "Quiet Admiration",
-            meaning: "Love that honors freedom"
-        },
-        {
-            lines: ["Seeing how she's become all this", "without needing help or a name,", "Building herself piece by piece", "into something steady and untamed."],
-            constellation: "spiral",
-            name: "The Building Journey",
-            meaning: "Self-constructed magnificence"
-        },
-        {
-            lines: ["There's admiration that doesn't speak much,", "that doesn't need to be explained,", "Just a quiet kind of awe that grows", "every time her presence remains."],
-            constellation: "expanding",
-            name: "Growing Wonder",
-            meaning: "Awe deepening with witness"
-        },
-        {
-            lines: ["And maybe that's what makes today", "feel different in its own calm way—", "Not because the world has changed,", "but because it's her day."],
-            constellation: "crown",
-            name: "Her Day",
-            meaning: "A day that belongs to her"
-        },
-        {
-            lines: ["A day that doesn't need grand words,", "or promises stretched too far ahead,", "Just the simple truth that who she is", "has already shaped so much instead."],
-            constellation: "sphere",
-            name: "Simple Truth",
-            meaning: "Complete and whole as is"
-        },
-        {
-            lines: ["So here's to the way she keeps growing—", "not louder, not faster, just true,", "Like a sky that keeps finding new colors", "and never forgets its blue."],
-            constellation: "layers",
-            name: "Endless Sky",
-            meaning: "Authentic growth, always true"
-        },
-        {
-            lines: ["Here's to everything she's carried,", "everything she's yet to be,", "To the quiet strength, the gentle care,", "to the person she's already become so naturally."],
-            constellation: "timeline",
-            name: "Past, Present, Future",
-            meaning: "Honoring all that she is"
-        },
-        {
-            lines: ["And if days keep moving forward like this,", "with all that she holds and creates,", "Then the world's only getting better", "with every step she takes."],
-            constellation: "path",
-            name: "The Path Forward",
-            meaning: "Each step improving the world"
-        },
-        {
-            lines: ["Because some people don't just pass through life—", "they change how it's seen, how it's felt, how it stays…", "…and today just happens to be hers. 💜"],
-            constellation: "universe",
-            name: "Her Universe",
-            meaning: "Fundamentally transforming existence"
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script>
+        const poemData = [
+            {
+                lines: ["Some people arrive into a day", "and nothing really changes shape,", "The hours pass the way they do,", "the sky remains the same escape."],
+                constellation: "circle",
+                name: "Corona Borealis",
+                desc: "The Northern Crown"
+            },
+            {
+                lines: ["But then there are days like this—", "the kind that feel a little more aware,", "As if the world remembers softly", "that someone like her is here."],
+                constellation: "cassiopeia",
+                name: "Cassiopeia",
+                desc: "The Queen of the Heavens"
+            },
+            {
+                lines: ["Not in a way that asks for noise,", "or celebration loud and bright,", "But in the way small things align", "a little better in her light."],
+                constellation: "lyra",
+                name: "Lyra",
+                desc: "The Harp of Orpheus"
+            },
+            {
+                lines: ["She doesn't try to be remarkable,", "doesn't gather attention or claim,", "Yet somehow everything around her", "feels steadier just the same."],
+                constellation: "anchor",
+                name: "Argo Navis",
+                desc: "The Ship's Anchor"
+            },
+            {
+                lines: ["The way she carries every moment,", "as if time trusts her with its weight,", "Not rushing through, not falling behind,", "just meeting each piece at its state."],
+                constellation: "horologium",
+                name: "Horologium",
+                desc: "The Pendulum Clock"
+            },
+            {
+                lines: ["There's something rare in how she moves,", "like calm stitched carefully with grace,", "Like even the busiest days she holds", "can't quite disturb her inner pace."],
+                constellation: "libra",
+                name: "Libra",
+                desc: "The Scales of Balance"
+            },
+            {
+                lines: ["And still, within all of that strength,", "there's softness she never misplaces—", "In the way she listens, understands,", "in the way she reads unspoken spaces."],
+                constellation: "aquila",
+                name: "Aquila",
+                desc: "The Soaring Eagle"
+            },
+            {
+                lines: ["She notices things most overlook,", "the little shifts, the hidden hue,", "The quiet beauty in passing skies,", "the kind of things that stay with you."],
+                constellation: "pleiades",
+                name: "Pleiades",
+                desc: "The Seven Sisters"
+            },
+            {
+                lines: ["Maybe that's why the world feels different", "when she looks at it for a while—", "Because even a sunset seems to learn", "how to deepen just to match her style."],
+                constellation: "phoenix",
+                name: "Phoenix",
+                desc: "The Firebird Rising"
+            },
+            {
+                lines: ["And somewhere in all of this,", "someone stands a little to the side,", "Not trying to hold or change her course,", "just watching with a kind of quiet pride."],
+                constellation: "cygnus",
+                name: "Cygnus",
+                desc: "The Swan in Flight"
+            },
+            {
+                lines: ["Seeing how she's become all this", "without needing help or a name,", "Building herself piece by piece", "into something steady and untamed."],
+                constellation: "draco",
+                name: "Draco",
+                desc: "The Eternal Dragon"
+            },
+            {
+                lines: ["There's admiration that doesn't speak much,", "that doesn't need to be explained,", "Just a quiet kind of awe that grows", "every time her presence remains."],
+                constellation: "andromeda",
+                name: "Andromeda",
+                desc: "The Chained Princess"
+            },
+            {
+                lines: ["And maybe that's what makes today", "feel different in its own calm way—", "Not because the world has changed,", "but because it's her day."],
+                constellation: "leo",
+                name: "Leo",
+                desc: "The Lion's Majesty"
+            },
+            {
+                lines: ["A day that doesn't need grand words,", "or promises stretched too far ahead,", "Just the simple truth that who she is", "has already shaped so much instead."],
+                constellation: "sphere",
+                name: "Celestial Sphere",
+                desc: "Perfect and Complete"
+            },
+            {
+                lines: ["So here's to the way she keeps growing—", "not louder, not faster, just true,", "Like a sky that keeps finding new colors", "and never forgets its blue."],
+                constellation: "ursa_major",
+                name: "Ursa Major",
+                desc: "The Great Bear"
+            },
+            {
+                lines: ["Here's to everything she's carried,", "everything she's yet to be,", "To the quiet strength, the gentle care,", "to the person she's already become so naturally."],
+                constellation: "perseus",
+                name: "Perseus",
+                desc: "The Hero's Journey"
+            },
+            {
+                lines: ["And if days keep moving forward like this,", "with all that she holds and creates,", "Then the world's only getting better", "with every step she takes."],
+                constellation: "ara",
+                name: "Ara",
+                desc: "The Sacred Altar"
+            },
+            {
+                lines: ["Because some people don't just pass through life—", "they change how it's seen, how it's felt, how it stays…", "…and today just happens to be hers. 💜"],
+                constellation: "orion",
+                name: "Orion",
+                desc: "The Hunter, Guardian of the Night Sky"
+            }
+        ];
+
+        // Canvas setup
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, centerX, centerY;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            centerX = width / 2;
+            centerY = height / 2;
         }
-    ];
+        resize();
+        window.addEventListener('resize', resize);
 
-    // Three.js Setup
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+        // Particle system
+        class Star {
+            constructor(x, y, brightness, size) {
+                this.x = x;
+                this.y = y;
+                this.tx = x;
+                this.ty = y;
+                this.brightness = brightness;
+                this.size = size;
+                this.twinkle = Math.random() * Math.PI * 2;
+            }
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 40;
+            update(speed) {
+                this.x += (this.tx - this.x) * speed;
+                this.y += (this.ty - this.y) * speed;
+                this.twinkle += 0.02;
+            }
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    document.body.insertBefore(renderer.domElement, document.body.firstChild);
-
-    // Particles and Lines
-    const PARTICLE_COUNT = 200;
-    const particleGeometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(PARTICLE_COUNT * 3);
-    const colors = new Float32Array(PARTICLE_COUNT * 3);
-    const targetPositions = new Float32Array(PARTICLE_COUNT * 3);
-
-    for (let i = 0; i < PARTICLE_COUNT * 3; i++) {
-        positions[i] = (Math.random() - 0.5) * 80;
-        colors[i] = 1.0;
-        targetPositions[i] = positions[i];
-    }
-
-    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-    const particleMaterial = new THREE.PointsMaterial({
-        size: 0.8,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.9,
-        blending: THREE.AdditiveBlending
-    });
-
-    const particles = new THREE.Points(particleGeometry, particleMaterial);
-    scene.add(particles);
-
-    // Lines for constellation connections
-    const lineGeometry = new THREE.BufferGeometry();
-    const linePositions = new Float32Array(PARTICLE_COUNT * 6); // Max lines
-    lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
-
-    const lineMaterial = new THREE.LineBasicMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: 0.2,
-        blending: THREE.AdditiveBlending
-    });
-
-    const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
-    scene.add(lines);
-
-    // Constellation patterns generator
-    function getConstellationPattern(type, textWidth = 30, textHeight = 15) {
-        const points = [];
-        const connections = [];
-        
-        switch(type) {
-            case 'circle':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const angle = (i / PARTICLE_COUNT) * Math.PI * 2;
-                    const radius = 22 + Math.random() * 3;
-                    points.push({
-                        x: Math.cos(angle) * radius,
-                        y: Math.sin(angle) * radius,
-                        z: (Math.random() - 0.5) * 5
-                    });
-                }
-                break;
+            draw(ctx) {
+                const twinkleBrightness = 0.7 + Math.sin(this.twinkle) * 0.3;
+                const alpha = this.brightness * twinkleBrightness;
                 
-            case 'star':
-                const starPoints = 8;
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const pointIndex = Math.floor((i / PARTICLE_COUNT) * starPoints);
-                    const angle = (pointIndex / starPoints) * Math.PI * 2;
-                    const isOuter = i % 2 === 0;
-                    const radius = isOuter ? 25 : 15;
-                    const spread = 3;
-                    points.push({
-                        x: Math.cos(angle) * radius + (Math.random() - 0.5) * spread,
-                        y: Math.sin(angle) * radius + (Math.random() - 0.5) * spread,
-                        z: (Math.random() - 0.5) * 5
-                    });
-                }
-                break;
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
+                gradient.addColorStop(0, `rgba(200, 220, 255, ${alpha})`);
+                gradient.addColorStop(0.2, `rgba(150, 180, 255, ${alpha * 0.8})`);
+                gradient.addColorStop(0.5, `rgba(100, 140, 255, ${alpha * 0.4})`);
+                gradient.addColorStop(1, `rgba(80, 120, 200, 0)`);
                 
-            case 'flowing':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const t = i / PARTICLE_COUNT;
-                    const angle = t * Math.PI * 4;
-                    const radius = 20;
-                    points.push({
-                        x: Math.cos(angle) * radius + Math.sin(t * Math.PI * 6) * 5,
-                        y: Math.sin(angle) * radius + Math.cos(t * Math.PI * 6) * 5,
-                        z: Math.sin(t * Math.PI * 3) * 3
-                    });
-                }
-                break;
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                ctx.fill();
                 
-            case 'anchor':
-                // Rectangle frame
-                const corners = 4;
-                const perSide = Math.floor(PARTICLE_COUNT / 4);
-                for (let side = 0; side < 4; side++) {
-                    for (let i = 0; i < perSide; i++) {
-                        const t = i / perSide;
-                        let x, y;
-                        if (side === 0) { x = -textWidth + t * textWidth * 2; y = textHeight; }
-                        else if (side === 1) { x = textWidth; y = textHeight - t * textHeight * 2; }
-                        else if (side === 2) { x = textWidth - t * textWidth * 2; y = -textHeight; }
-                        else { x = -textWidth; y = -textHeight + t * textHeight * 2; }
-                        points.push({
-                            x: x + (Math.random() - 0.5) * 2,
-                            y: y + (Math.random() - 0.5) * 2,
-                            z: (Math.random() - 0.5) * 4
-                        });
-                    }
-                }
-                break;
-                
-            case 'hourglass':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const t = i / PARTICLE_COUNT;
-                    const angle = t * Math.PI * 2 * 3;
-                    const height = (t - 0.5) * 30;
-                    const radius = 10 * (1 - Math.abs(height) / 20);
-                    points.push({
-                        x: Math.cos(angle) * radius,
-                        y: height,
-                        z: Math.sin(angle) * radius
-                    });
-                }
-                break;
-                
-            case 'balanced':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const angle = (i / PARTICLE_COUNT) * Math.PI * 2;
-                    const r = 18;
-                    const side = Math.sin(angle) > 0 ? 1 : -1;
-                    const offset = side * Math.cos(angle * 2) * 5;
-                    points.push({
-                        x: r * Math.cos(angle) + offset,
-                        y: r * Math.sin(angle),
-                        z: (Math.random() - 0.5) * 3
-                    });
-                }
-                break;
-                
-            case 'eye':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const angle = (i / PARTICLE_COUNT) * Math.PI * 2;
-                    const radius = 20 + Math.cos(angle * 2) * 5;
-                    points.push({
-                        x: Math.cos(angle) * radius * 1.5,
-                        y: Math.sin(angle) * radius,
-                        z: (Math.random() - 0.5) * 4
-                    });
-                }
-                break;
-                
-            case 'scattered':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const radius = 15 + Math.random() * 15;
-                    points.push({
-                        x: Math.cos(angle) * radius,
-                        y: Math.sin(angle) * radius + (Math.random() - 0.5) * 10,
-                        z: (Math.random() - 0.5) * 10
-                    });
-                }
-                break;
-                
-            case 'horizon':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const x = ((i % 50) - 25) * 1.5;
-                    const y = -10 + Math.exp(-Math.abs(x) / 10) * 15;
-                    const z = (Math.floor(i / 50) - 2) * 3;
-                    points.push({ x, y, z });
-                }
-                break;
-                
-            case 'heart':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const t = (i / PARTICLE_COUNT) * Math.PI * 2;
-                    const scale = 0.8;
-                    const x = 16 * Math.pow(Math.sin(t), 3) * scale;
-                    const y = (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) * scale;
-                    points.push({ x, y, z: (Math.random() - 0.5) * 4 });
-                }
-                break;
-                
-            case 'spiral':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const t = (i / PARTICLE_COUNT) * Math.PI * 6;
-                    const radius = t * 1.5;
-                    points.push({
-                        x: Math.cos(t) * radius,
-                        y: t * 2 - 15,
-                        z: Math.sin(t) * radius
-                    });
-                }
-                break;
-                
-            case 'expanding':
-                const rings = 5;
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const ring = Math.floor((i / PARTICLE_COUNT) * rings);
-                    const angle = (i / (PARTICLE_COUNT / rings)) * Math.PI * 2;
-                    const radius = 10 + ring * 4;
-                    points.push({
-                        x: Math.cos(angle) * radius,
-                        y: Math.sin(angle) * radius,
-                        z: (Math.random() - 0.5) * (ring + 1)
-                    });
-                }
-                break;
-                
-            case 'crown':
-                const peaks = 8;
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const peak = Math.floor((i / PARTICLE_COUNT) * peaks);
-                    const t = (i % (PARTICLE_COUNT / peaks)) / (PARTICLE_COUNT / peaks);
-                    const angle = (peak / peaks) * Math.PI * 2;
-                    const radius = 18 * (1 - t);
-                    const height = t * 15;
-                    points.push({
-                        x: Math.cos(angle) * radius,
-                        y: height - 7,
-                        z: Math.sin(angle) * radius
-                    });
-                }
-                break;
-                
-            case 'sphere':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
-                    const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
-                    const r = 20;
-                    points.push({
-                        x: r * Math.cos(theta) * Math.sin(phi),
-                        y: r * Math.sin(theta) * Math.sin(phi),
-                        z: r * Math.cos(phi)
-                    });
-                }
-                break;
-                
-            case 'layers':
-                const layerCount = 7;
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const layer = Math.floor((i / PARTICLE_COUNT) * layerCount);
-                    const x = ((i % 30) - 15) * 2;
-                    const y = layer * 5 - 15;
-                    const z = (Math.floor((i % (PARTICLE_COUNT / layerCount)) / 30) - 2) * 3;
-                    points.push({ x, y, z });
-                }
-                break;
-                
-            case 'timeline':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const section = Math.floor((i / PARTICLE_COUNT) * 3);
-                    const t = (i % (PARTICLE_COUNT / 3)) / (PARTICLE_COUNT / 3);
-                    const x = -20 + section * 20;
-                    const y = Math.sin(t * Math.PI * 4) * 5;
-                    const z = (Math.random() - 0.5) * 5;
-                    points.push({ x: x + (Math.random() - 0.5) * 3, y, z });
-                }
-                break;
-                
-            case 'path':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const step = Math.floor((i / PARTICLE_COUNT) * 10);
-                    const t = (i % (PARTICLE_COUNT / 10)) / (PARTICLE_COUNT / 10);
-                    const x = step * 4 - 20;
-                    const y = -8;
-                    const z = ((step % 2) * 4 - 2) + Math.sin(t * Math.PI * 2) * 2;
-                    points.push({ x, y, z });
-                }
-                break;
-                
-            case 'universe':
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    const phi = Math.acos(-1 + (2 * i) / PARTICLE_COUNT);
-                    const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi;
-                    const r = 10 + Math.random() * 15;
-                    points.push({
-                        x: r * Math.cos(theta) * Math.sin(phi),
-                        y: r * Math.sin(theta) * Math.sin(phi),
-                        z: r * Math.cos(phi)
-                    });
-                }
-                break;
-                
-            default:
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    points.push({
-                        x: (Math.random() - 0.5) * 60,
-                        y: (Math.random() - 0.5) * 40,
-                        z: (Math.random() - 0.5) * 20
-                    });
-                }
-        }
-        
-        return { points, connections };
-    }
-
-    function setConstellationPattern(type) {
-        const { points, connections } = getConstellationPattern(type);
-        const colorAttr = particles.geometry.attributes.color;
-        
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            const p = points[i] || { x: 0, y: 0, z: 0 };
-            targetPositions[i * 3] = p.x;
-            targetPositions[i * 3 + 1] = p.y;
-            targetPositions[i * 3 + 2] = p.z;
-            
-            // White particles
-            colorAttr.setXYZ(i, 1.0, 1.0, 1.0);
-        }
-        colorAttr.needsUpdate = true;
-        
-        // Update constellation lines
-        updateConstellationLines();
-    }
-
-    function updateConstellationLines() {
-        const linePos = lines.geometry.attributes.position;
-        let lineIndex = 0;
-        const maxDistance = 8;
-        
-        // Connect nearby particles
-        for (let i = 0; i < PARTICLE_COUNT && lineIndex < PARTICLE_COUNT * 6; i++) {
-            const x1 = targetPositions[i * 3];
-            const y1 = targetPositions[i * 3 + 1];
-            const z1 = targetPositions[i * 3 + 2];
-            
-            for (let j = i + 1; j < PARTICLE_COUNT && lineIndex < PARTICLE_COUNT * 6; j++) {
-                const x2 = targetPositions[j * 3];
-                const y2 = targetPositions[j * 3 + 1];
-                const z2 = targetPositions[j * 3 + 2];
-                
-                const dist = Math.sqrt(
-                    Math.pow(x2 - x1, 2) +
-                    Math.pow(y2 - y1, 2) +
-                    Math.pow(z2 - z1, 2)
-                );
-                
-                if (dist < maxDistance) {
-                    linePos.setXYZ(lineIndex, x1, y1, z1);
-                    linePos.setXYZ(lineIndex + 1, x2, y2, z2);
-                    lineIndex += 2;
-                }
+                // Core
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
-        
-        // Fill remaining with zeros
-        for (let i = lineIndex; i < PARTICLE_COUNT * 6; i++) {
-            linePos.setXYZ(i, 0, 0, 0);
+
+        const backgroundStars = [];
+        for (let i = 0; i < 800; i++) {
+            backgroundStars.push(new Star(
+                Math.random() * width,
+                Math.random() * height,
+                Math.random() * 0.4 + 0.1,
+                Math.random() * 0.5 + 0.3
+            ));
         }
-        
-        linePos.needsUpdate = true;
-    }
 
-    // State
-    let currentStanza = 0;
-    let handX = 0, handY = 0;
-    let isPinching = false, isFist = false;
-    let lastSwipeTime = 0, lastHandX = 0;
+        const constellationStars = [];
+        const connections = [];
 
-    // UI
-    const poemContainer = document.getElementById('poem-container');
-    const constellationName = document.getElementById('constellation-name');
-    const constellationMeaning = document.getElementById('constellation-meaning');
-    const progress = document.getElementById('progress');
+        // Real constellation patterns
+        function getConstellation(type) {
+            const stars = [];
+            const lines = [];
+            const scale = Math.min(width, height) / 20;
+            
+            switch(type) {
+                case 'orion': // The Hunter
+                    const orionPattern = [
+                        {x: 0, y: -4, b: 1.0, s: 2.5}, // Betelgeuse
+                        {x: 0, y: 4, b: 1.0, s: 2.5},  // Rigel
+                        {x: -1.5, y: 0, b: 0.9, s: 2},
+                        {x: -0.5, y: 0, b: 0.8, s: 1.8},
+                        {x: 0.5, y: 0, b: 0.8, s: 1.8},
+                        {x: 1.5, y: 0, b: 0.9, s: 2},  // Belt
+                        {x: -2, y: -3, b: 0.7, s: 1.5},
+                        {x: 2, y: -3, b: 0.7, s: 1.5},
+                        {x: -2, y: 3, b: 0.7, s: 1.5},
+                        {x: 2, y: 3, b: 0.7, s: 1.5}
+                    ];
+                    orionPattern.forEach(p => stars.push({
+                        x: centerX + p.x * scale,
+                        y: centerY + p.y * scale,
+                        brightness: p.b,
+                        size: p.s
+                    }));
+                    lines.push([0,2],[2,3],[3,4],[4,5],[5,1],[0,6],[6,7],[7,0],[1,8],[8,9],[9,1]);
+                    break;
+                    
+                case 'cassiopeia': // The Queen (W shape)
+                    const cassPattern = [
+                        {x: -4, y: 0, b: 0.95, s: 2},
+                        {x: -2, y: 2, b: 0.9, s: 2},
+                        {x: 0, y: 0, b: 1.0, s: 2.5},
+                        {x: 2, y: 2, b: 0.9, s: 2},
+                        {x: 4, y: 0, b: 0.95, s: 2}
+                    ];
+                    cassPattern.forEach(p => stars.push({
+                        x: centerX + p.x * scale,
+                        y: centerY + p.y * scale,
+                        brightness: p.b,
+                        size: p.s
+                    }));
+                    lines.push([0,1],[1,2],[2,3],[3,4]);
+                    break;
+                    
+                case 'ursa_major': // Big Dipper
+                    const ursaPattern = [
+                        {x: -4, y: -1, b: 0.9, s: 2},
+                        {x: -2, y: -1, b: 0.95, s: 2},
+                        {x: 0, y: 0, b: 0.9, s: 2},
+                        {x: 2, y: 0, b: 0.9, s: 2},
+                        {x: 2, y: 2, b: 0.85, s: 1.8},
+                        {x: 0, y: 3, b: 0.85, s: 1.8},
+                        {x: -2, y: 3, b: 0.9, s: 2}
+                    ];
+                    ursaPattern.forEach(p => stars.push({
+                        x: centerX + p.x * scale,
+                        y: centerY + p.y * scale,
+                        brightness: p.b,
+                        size: p.s
+                    }));
+                    lines.push([0,1],[1,2],[2,3],[3,4],[4,5],[5,6]);
+                    break;
+                    
+                case 'cygnus': // The Swan / Northern Cross
+                    const cygnusPattern = [
+                        {x: 0, y: -4, b: 1.0, s: 2.5}, // Deneb
+                        {x: 0, y: 0, b: 0.9, s: 2},
+                        {x: -3, y: 0, b: 0.85, s: 1.8},
+                        {x: 3, y: 0, b: 0.85, s: 1.8},
+                        {x: 0, y: 3, b: 0.9, s: 2}
+                    ];
+                    cygnusPattern.forEach(p => stars.push({
+                        x: centerX + p.x * scale,
+                        y: centerY + p.y * scale,
+                        brightness: p.b,
+                        size: p.s
+                    }));
+                    lines.push([0,1],[1,4],[2,1],[1,3]);
+                    break;
+                    
+                case 'leo': // The Lion
+                    const leoPattern = [
+                        {x: 0, y: -3, b: 1.0, s: 2.5}, // Regulus
+                        {x: -2, y: -2, b: 0.85, s: 1.8},
+                        {x: -3, y: 0, b: 0.8, s: 1.6},
+                        {x: -2, y: 2, b: 0.8, s: 1.6},
+                        {x: 0, y: 2, b: 0.85, s: 1.8},
+                        {x: 2, y: 1, b: 0.85, s: 1.8},
+                        {x: 3, y: -1, b: 0.9, s: 2}
+                    ];
+                    leoPattern.forEach(p => stars.push({
+                        x: centerX + p.x * scale,
+                        y: centerY + p.y * scale,
+                        brightness: p.b,
+                        size: p.s
+                    }));
+                    lines.push([0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0]);
+                    break;
+                    
+                case 'lyra': // The Harp
+                    const lyraPattern = [
+                        {x: 0, y: 0, b: 1.0, s: 2.8}, // Vega
+                        {x: -1.5, y: 2, b: 0.75, s: 1.5},
+                        {x: 1.5, y: 2, b: 0.75, s: 1.5},
+                        {x: -2, y: 3.5, b: 0.7, s: 1.3},
+                        {x: 2, y: 3.5, b: 0.7, s: 1.3}
+                    ];
+                    lyraPattern.forEach(p => stars.push({
+                        x: centerX + p.x * scale,
+                        y: centerY + p.y * scale,
+                        brightness: p.b,
+                        size: p.s
+                    }));
+                    lines.push([0,1],[0,2],[1,3],[2,4],[3,4]);
+                    break;
+                    
+                case 'draco': // The Dragon
+                    const dracoPattern = [
+                        {x: 0, y: -4, b: 0.9, s: 2},
+                        {x: -1, y: -2, b: 0.85, s: 1.8},
+                        {x: -2, y: 0, b: 0.85, s: 1.8},
+                        {x: -1, y: 2, b: 0.8, s: 1.6},
+                        {x: 1, y: 3, b: 0.8, s: 1.6},
+                        {x: 3, y: 2, b: 0.85, s: 1.8},
+                        {x: 2, y: 0, b: 0.85, s: 1.8},
+                        {x: 1, y: -2, b: 0.9, s: 2}
+                    ];
+                    dracoPattern.forEach(p => stars.push({
+                        x: centerX + p.x * scale,
+                        y: centerY + p.y * scale,
+                        brightness: p.b,
+                        size: p.s
+                    }));
+                    lines.push([0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0]);
+                    break;
+                    
+                case 'andromeda': // The Princess
+                    const andromedaPattern = [
+                        {x: -3, y: 0, b: 0.9, s: 2},
+                        {x: -1, y: 0, b: 0.95, s: 2.2},
+                        {x: 1, y: -1, b: 0.85, s: 1.8},
+                        {x: 3, y: -1, b: 0.8, s: 1.6},
+                        {x: 1, y: 2, b: 0.8, s: 1.6}
+                    ];
+                    andromedaPattern.forEach(p => stars.push({
+                        x: centerX + p.x * scale,
+                        y: centerY + p.y * scale,
+                        brightness: p.b,
+                        size: p.s
+                    }));
+                    lines.push([0,1],[1,2],[2,3],[1,4]);
+                    break;
+                    
+                case 'perseus': // The Hero
+                    const perseusPattern = [
+                        {x: -3, y: -2, b: 0.9, s: 2},
+                        {x: -1, y: 0, b: 0.95, s: 2.2},
+                        {x: 1, y: 1, b: 0.9, s: 2},
+                        {x: 0, y: 3, b: 0.85, s: 1.8},
+                        {x: -2, y: 2, b: 0.8, s: 1.6}
+                    ];
+                    perseusPattern.forEach(p => stars.push({
+                        x: centerX + p.x * scale,
+                        y: centerY + p.y * scale,
+                        brightness: p.b,
+                        size: p.s
+                    }));
+                    lines.push([0,1],[1,2],[2,3],[1,4]);
+                    break;
+                    
+                case 'aquila': // The Eagle
+                    const aquilaPattern = [
+                        {x: 0, y: 0, b: 1.0, s: 2.5}, // Altair
+                        {x: -2, y: -1, b: 0.85, s: 1.8},
+                        {x: 2, y: -1, b: 0.85, s: 1.8},
+                        {x: 0, y: 3, b: 0.8, s: 1.6}
+                    ];
+                    aquilaPattern.forEach(p => stars.push({
+                        x: centerX + p.x * scale,
+                        y: centerY + p.y * scale,
+                        brightness: p.b,
+                        size: p.s
+                    }));
+                    lines.push([1,0],[0,2],[0,3]);
+                    break;
+                    
+                case 'libra': // The Scales
+                    const libraPattern = [
+                        {x: -3, y: 0, b: 0.9, s: 2},
+                        {x: 0, y: -1, b: 0.95, s: 2.2},
+                        {x: 3, y: 0, b: 0.9, s: 2},
+                        {x: -2, y: 2, b: 0.8, s: 1.6},
+                        {x: 2, y: 2, b: 0.8, s: 1.6}
+                    ];
+                    libraPattern.forEach(p => stars.push({
+                        x: centerX + p.x * scale,
+                        y: centerY + p.y * scale,
+                        brightness: p.b,
+                        size: p.s
+                    }));
+                    lines.push([0,1],[1,2],[0,3],[2,4]);
+                    break;
+                    
+                case 'pleiades': // Seven Sisters (cluster)
+                    for (let i = 0; i < 7; i++) {
+                        const angle = (i / 7) * Math.PI * 2;
+                        const radius = 2 + Math.random() * 1.5;
+                        stars.push({
+                            x: centerX + Math.cos(angle) * radius * scale,
+                            y: centerY + Math.sin(angle) * radius * scale,
+                            brightness: 0.85 + Math.random() * 0.15,
+                            size: 1.8 + Math.random() * 0.7
+                        });
+                    }
+                    // Pleiades - no lines, just cluster
+                    break;
+                    
+                case 'circle': // Corona Borealis
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2;
+                        const radius = 3.5;
+                        stars.push({
+                            x: centerX + Math.cos(angle) * radius * scale,
+                            y: centerY + Math.sin(angle) * radius * scale,
+                            brightness: 0.85 + Math.random() * 0.1,
+                            size: 1.8 + Math.random() * 0.5
+                        });
+                    }
+                    for (let i = 0; i < 8; i++) {
+                        lines.push([i, (i + 1) % 8]);
+                    }
+                    break;
+                    
+                case 'sphere': // Celestial Sphere
+                    const sphereCount = 20;
+                    for (let i = 0; i < sphereCount; i++) {
+                        const phi = Math.acos(-1 + (2 * i) / sphereCount);
+                        const theta = Math.sqrt(sphereCount * Math.PI) * phi;
+                        const radius = 4;
+                        stars.push({
+                            x: centerX + radius * scale * Math.cos(theta) * Math.sin(phi),
+                            y: centerY + radius * scale * Math.sin(theta) * Math.sin(phi),
+                            brightness: 0.7 + Math.random() * 0.2,
+                            size: 1.5 + Math.random() * 0.5
+                        });
+                    }
+                    break;
+                    
+                // Simpler patterns for other constellations
+                case 'phoenix':
+                case 'ara':
+                case 'anchor':
+                case 'horologium':
+                    // Create simple geometric patterns
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (i / 6) * Math.PI * 2;
+                        const radius = 3;
+                        stars.push({
+                            x: centerX + Math.cos(angle) * radius * scale + (Math.random() - 0.5) * scale,
+                            y: centerY + Math.sin(angle) * radius * scale + (Math.random() - 0.5) * scale,
+                            brightness: 0.8 + Math.random() * 0.2,
+                            size: 1.6 + Math.random() * 0.6
+                        });
+                    }
+                    for (let i = 0; i < 5; i++) {
+                        lines.push([i, i + 1]);
+                    }
+                    break;
+            }
+            
+            return { stars, lines };
+        }
 
-    function displayStanza(index) {
-        if (index < 0 || index >= poemData.length) return;
-        
-        currentStanza = index;
-        const data = poemData[index];
-        
-        poemContainer.style.opacity = '0';
-        setTimeout(() => {
+        function setConstellation(type) {
+            const { stars, lines } = getConstellation(type);
+            
+            constellationStars.length = 0;
+            connections.length = 0;
+            
+            stars.forEach(s => {
+                constellationStars.push(new Star(
+                    Math.random() * width,
+                    Math.random() * height,
+                    s.brightness,
+                    s.size
+                ));
+                constellationStars[constellationStars.length - 1].tx = s.x;
+                constellationStars[constellationStars.length - 1].ty = s.y;
+            });
+            
+            connections.push(...lines);
+        }
+
+        // State
+        let currentStanza = 0;
+        let handX = 0, handY = 0, isFist = false;
+        let lastSwipeTime = 0, lastHandX = 0;
+        let expansion = 1.0;
+
+        // UI
+        const poemContainer = document.getElementById('poem-container');
+        const constellationName = document.getElementById('constellation-name');
+        const constellationDesc = document.getElementById('constellation-desc');
+        const progress = document.getElementById('progress');
+
+        function displayStanza(index) {
+            if (index < 0 || index >= poemData.length) return;
+            currentStanza = index;
+            const data = poemData[index];
+            
             poemContainer.innerHTML = '';
             data.lines.forEach((line, i) => {
                 const lineDiv = document.createElement('div');
@@ -707,107 +661,102 @@
                 lineDiv.style.setProperty('--line-index', i);
                 poemContainer.appendChild(lineDiv);
             });
-            poemContainer.style.opacity = '1';
-        }, 300);
-        
-        setConstellationPattern(data.constellation);
-        
-        constellationName.textContent = data.name;
-        constellationMeaning.textContent = data.meaning;
-        progress.textContent = `${index + 1} / ${poemData.length}`;
-    }
-
-    // Hand tracking
-    const videoElement = document.getElementsByClassName('input_video')[0];
-    
-    function onResults(results) {
-        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-            const landmarks = results.multiHandLandmarks[0];
-            const newHandX = (0.5 - landmarks[9].x) * 2;
-            handY = (0.5 - landmarks[9].y) * 2;
             
-            const swipeDelta = newHandX - lastHandX;
-            if (Math.abs(swipeDelta) > 0.15 && Date.now() - lastSwipeTime > 800) {
-                if (swipeDelta > 0 && currentStanza > 0) {
-                    displayStanza(currentStanza - 1);
-                    lastSwipeTime = Date.now();
-                } else if (swipeDelta < 0 && currentStanza < poemData.length - 1) {
-                    displayStanza(currentStanza + 1);
-                    lastSwipeTime = Date.now();
+            setConstellation(data.constellation);
+            constellationName.textContent = data.name;
+            constellationDesc.textContent = data.desc;
+            progress.textContent = `${index + 1} / ${poemData.length}`;
+        }
+
+        // Hand tracking
+        const videoElement = document.getElementsByClassName('input_video')[0];
+        
+        function onResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                const newHandX = (0.5 - landmarks[9].x) * 2;
+                handY = (0.5 - landmarks[9].y) * 2;
+                
+                const swipeDelta = newHandX - lastHandX;
+                if (Math.abs(swipeDelta) > 0.15 && Date.now() - lastSwipeTime > 800) {
+                    if (swipeDelta > 0 && currentStanza > 0) {
+                        displayStanza(currentStanza - 1);
+                        lastSwipeTime = Date.now();
+                    } else if (swipeDelta < 0 && currentStanza < poemData.length - 1) {
+                        displayStanza(currentStanza + 1);
+                        lastSwipeTime = Date.now();
+                    }
                 }
+                lastHandX = newHandX;
+                handX = newHandX;
+                
+                const palmDist = Math.hypot(landmarks[8].x - landmarks[0].x, landmarks[8].y - landmarks[0].y);
+                isFist = palmDist < 0.25;
             }
-            lastHandX = newHandX;
-            handX = newHandX;
-            
-            const dist = Math.hypot(landmarks[8].x - landmarks[4].x, landmarks[8].y - landmarks[4].y, landmarks[8].z - landmarks[4].z);
-            isPinching = dist < 0.05;
-            
-            const palmDist = Math.hypot(landmarks[8].x - landmarks[0].x, landmarks[8].y - landmarks[0].y);
-            isFist = palmDist < 0.25;
         }
-    }
 
-    const hands = new Hands({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-    });
-    hands.setOptions({
-        maxNumHands: 1,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
-    });
-    hands.onResults(onResults);
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        hands.onResults(onResults);
 
-    const cameraUtils = new Camera(videoElement, {
-        onFrame: async () => { await hands.send({ image: videoElement }); },
-        width: 320,
-        height: 240
-    });
+        const cameraUtils = new Camera(videoElement, {
+            onFrame: async () => { await hands.send({ image: videoElement }); },
+            width: 320, height: 240
+        });
 
-    displayStanza(0);
-    cameraUtils.start();
+        displayStanza(0);
+        cameraUtils.start();
 
-    // Animation
-    const clock = new THREE.Clock();
-    function animate() {
-        requestAnimationFrame(animate);
-        
-        const time = clock.getElapsedTime();
-        const posAttr = particles.geometry.attributes.position;
-        const curPos = posAttr.array;
-
-        particles.rotation.x += ((handY * 0.3) - particles.rotation.x) * 0.05;
-        particles.rotation.y += ((handX * 0.3) - particles.rotation.y) * 0.05;
-        particles.rotation.z += 0.0003;
-
-        const exp = isFist ? 0.4 : (isPinching ? 1.2 : 1.0);
-        const speed = isFist ? 0.12 : 0.03;
-
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            const idx = i * 3;
-            const tx = targetPositions[idx] * exp;
-            const ty = targetPositions[idx + 1] * exp;
-            const tz = targetPositions[idx + 2] * exp;
-            const noise = Math.sin(time * 0.5 + i * 0.1) * 0.02;
-
-            curPos[idx] += (tx - curPos[idx]) * speed + noise;
-            curPos[idx + 1] += (ty - curPos[idx + 1]) * speed + noise;
-            curPos[idx + 2] += (tz - curPos[idx + 2]) * speed + noise;
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Clear with fade
+            ctx.fillStyle = 'rgba(10, 6, 20, 0.15)';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Update expansion
+            const targetExpansion = isFist ? 0.3 : 1.0;
+            expansion += (targetExpansion - expansion) * 0.05;
+            
+            // Draw background stars
+            backgroundStars.forEach(star => {
+                star.update(0.001);
+                star.draw(ctx);
+            });
+            
+            // Update and draw constellation
+            const speed = 0.04;
+            constellationStars.forEach(star => {
+                const dx = star.tx - centerX;
+                const dy = star.ty - centerY;
+                star.tx = centerX + dx * expansion;
+                star.ty = centerY + dy * expansion;
+                star.update(speed);
+                star.draw(ctx);
+            });
+            
+            // Draw constellation lines
+            ctx.strokeStyle = 'rgba(150, 180, 255, 0.4)';
+            ctx.lineWidth = 1.5;
+            ctx.shadowColor = 'rgba(150, 180, 255, 0.6)';
+            ctx.shadowBlur = 10;
+            
+            connections.forEach(([a, b]) => {
+                if (constellationStars[a] && constellationStars[b]) {
+                    ctx.beginPath();
+                    ctx.moveTo(constellationStars[a].x, constellationStars[a].y);
+                    ctx.lineTo(constellationStars[b].x, constellationStars[b].y);
+                    ctx.stroke();
+                }
+            });
+            
+            ctx.shadowBlur = 0;
         }
-        posAttr.needsUpdate = true;
-        
-        updateConstellationLines();
 
-        renderer.render(scene, camera);
-    }
-
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    animate();
-</script>
+        animate();
+    </script>
 </body>
 </html>
